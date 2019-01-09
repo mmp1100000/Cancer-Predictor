@@ -1,0 +1,7 @@
+{
+  "host":"localhost",
+  "database":"cancerpredictor",
+  "port":32771,
+  "user":"root",
+  "password":"qwerty"
+}
