@@ -2,3 +2,5 @@
 WebApp/\.idea/
 
 WebApp/database/mysql_connection_settings\.json
+
+WebApp/__pycache__/
