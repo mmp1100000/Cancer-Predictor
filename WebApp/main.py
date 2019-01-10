@@ -5,21 +5,16 @@ from login import user_validation
 app = Flask(__name__, template_folder='template')
 
 
-@app.route('/<string:page_name>/')
-def static_page(page_name):
-    return render_template('%s.html' % page_name)
-
-
 @app.route("/")
 def hello():
     pass
-    #return render_template('index.html')
+    # return render_template('login.html')
 
 
 @app.route('/login')
 def login_page():
-    # return app.send_static_file('/login/index.html')
-    return render_template('index.html')
+    # return app.send_static_file('/login/login.html')
+    return render_template('login.html', message='')
 
 
 @app.route('/login-auth', methods=['POST'])
@@ -32,7 +27,7 @@ def login():
     if user_validation(user, password):
         return jsonify({'response': 'OK'}), 201
     else:
-        return jsonify({'response': 'login error'}), 201
+        return render_template('login.html', message='Login error')
 
 
 if __name__ == '__main__':
