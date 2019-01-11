@@ -33,6 +33,6 @@ class Connection:
             cursor.execute(query)
             for result in cursor.fetchall():
                 res.append(result[0])
-            return json.dumps(res)
+            return res
         except Error as query_error:
             print(query_error)
