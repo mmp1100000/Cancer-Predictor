@@ -14,7 +14,7 @@ def hello():
 @app.route('/login')
 def login_page():
     # return app.send_static_file('/login/login.html')
-    return render_template('login.html', message='')
+    return render_template('sign-log.html', message='')
 
 
 @app.route('/login-auth', methods=['POST'])
