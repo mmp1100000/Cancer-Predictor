@@ -1,9 +1,22 @@
+import hashlib
+
+from database.mysql_connector import Connection
+
+conn = Connection()
+
+
 def user_validation(user, password):
     """
-    @TODO do user validation
     Checks if the user and password are correct in DB.
     :param user:
     :param password:
     :return: True/False (OK/USER ERROR)
     """
-    return True
+    input_password = hashlib.sha256(password.encode("utf8"))
+    hex_dig = input_password.hexdigest()
+    true_password = conn.do_query('SELECT password FROM user WHERE email=\"' + user + '\";')
+    if len(true_password) == 0:
+        return False
+    if true_password[0] == hex_dig:
+        return True
+    return False
