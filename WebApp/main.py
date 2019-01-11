@@ -7,14 +7,13 @@ app = Flask(__name__, template_folder='template')
 
 @app.route("/")
 def hello():
-    pass
-    # return render_template('login.html')
+    return '<h1>Main page</h1>'
 
 
 @app.route('/login')
 def login_page():
     # return app.send_static_file('/login/login.html')
-    return render_template('login.html', message='')
+    return render_template('login.html')
 
 
 @app.route('/login-auth', methods=['POST'])

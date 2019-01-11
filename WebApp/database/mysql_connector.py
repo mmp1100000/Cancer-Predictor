@@ -1,24 +1,38 @@
-from _mysql import Error
+import json
 
-import mysql.connector
+from mysql import connector
+from mysql.connector import Error
 
 
 class Connection:
-    def __init__(self, host, database, port, user, password):
+
+    def __init__(self):
         try:
-            self.connection = mysql.connector.connect(host=host,
-                                                      database=database,
-                                                      port=port,
-                                                      user=user,
-                                                      password=password)
-        except Error as connection_error:
-            print(connection_error)
+            json1_file = open('database/mysql_connection_settings.json')
+            json1_str = json1_file.read()
+            json1_data = json.loads(json1_str)
+            self.host = json1_data['host']
+            self.database = json1_data['database']
+            self.port = json1_data['port']
+            self.user = json1_data['user']
+            self.password = json1_data['password']
+        except Error as mysql_file_error:
+            print(mysql_file_error)
+
+        self.connection = connector.connect(host=self.host,
+                                            database=self.database,
+                                            port=self.port,
+                                            user=self.user,
+                                            password=self.password)
 
     def do_query(self, query):
+        print(query)
+        res = list()
         try:
             cursor = self.connection.cursor()
             cursor.execute(query)
             for result in cursor.fetchall():
-                print(result)
+                res.append(result[0])
+            return json.dumps(res)
         except Error as query_error:
             print(query_error)
