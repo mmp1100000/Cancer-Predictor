@@ -7,8 +7,7 @@ app = Flask(__name__, template_folder='template')
 
 @app.route("/")
 def hello():
-    pass
-    # return render_template('login.html')
+    return render_template('index.html', message='')
 
 
 @app.route('/login')
