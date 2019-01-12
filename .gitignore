@@ -6,3 +6,5 @@ WebApp/database/mysql_connection_settings\.json
 WebApp/__pycache__/
 
 \.idea/
+
+WebApp/database/__pycache__/
