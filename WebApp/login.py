@@ -31,6 +31,11 @@ def user_registration(firstname, lastname, email, password, rol):
     if len(query) != 0:
         return False
     else:
-        regist = conn.do_query('INSERT INTO user(username, password, email, rol) VALUES (\"'+'\",\"'.join(row)+'\");')
+        regist = conn.do_query(
+            'INSERT INTO user(username, password, email, rol) VALUES (\"' + '\",\"'.join(row) + '\");')
         conn.connection.commit()
-        return True
+        query = conn.do_query('SELECT username FROM user WHERE email=\"' + email + '\";')
+        if len(query) == 0:  # User not added
+            return False
+        else:
+            return True

@@ -63,7 +63,8 @@ def register_page():
 def register_submit():
     if 'username' in session:  # If user already logged in
         return redirect(url_for('main_page'))
-    return render_template('register.html', rols=Markup('<option>Doctor</option>'))  # Show login page
+    else:
+        return render_template('register.html', rols=Markup('<option>Doctor</option>'))  # Show login page
 
 
 @app.route('/logout')
