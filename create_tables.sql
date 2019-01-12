@@ -23,7 +23,7 @@ USE `mydb` ;
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `mydb`.`usuario` ;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`usuario` (
+CREATE TABLE IF NOT EXISTS `mydb`.`user` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(45) NOT NULL,
   `password` VARCHAR(45) NOT NULL,
