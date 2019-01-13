@@ -36,3 +36,15 @@ class Connection:
             return res
         except Error as query_error:
             print(query_error)
+
+    def do_query_mult_col(self, query):
+        print(query)
+        res = list()
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            for result in cursor.fetchall():
+                res.append(result)
+            return res
+        except Error as query_error:
+            print(query_error)
