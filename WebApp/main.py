@@ -37,35 +37,28 @@ def main_page():
 @app.route("/admin")
 def admin_page():
 
-    if get_user_rol(session['username']) != 'Admin':
+    if 'username' not in session or get_user_rol(session['username']) != 'Admin':
         return make_response(
             render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
-
-    logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
+    else:
+        logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
          <span class="glyphicon glyphicon-user"></span>\
           Log-out</a>')  # Logout HTML link
-    nav = Markup('<li class="nav-item active"> <a class ="nav-link text-warning active"  style="font-size: 160%" '
-                 'href="" > Administration </a></li>')
-    return make_response(
-        render_template('administration.html', navbar=nav, signin=logout))  # Redirect to admin, show logout link
+        return make_response(
+            render_template('administration.html', signin=logout))  # Redirect to admin, show logout link
 
 
 @app.route("/records")
 def records_page():
 
-    if get_user_rol(session['username']) != 'Doctor':
+    if 'username' not in session or get_user_rol(session['username']) != 'Doctor':
         return make_response(
             render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
-
-    logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
+    else:
+        logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
              <span class="glyphicon glyphicon-user"></span>\
               Log-out</a>')  # Logout HTML link
-    nav = Markup(
-            '<li class="nav-item active"> <a class ="nav-link text-warning active"  style="font-size: 160%" href="/" > '
-            'Predictor </a></li><li class="nav-item"> <a class ="nav-link text-warning" style="font-size: '
-            '160%" href="/records" > Records </a></li>')
-    return make_response(
-        render_template('records.html', navbar=nav, signin=logout))  # Redirect to admin, show logout link
+        return make_response(render_template('records.html', signin=logout))  # Redirect to admin, show logout link
 
 
 @app.route('/login')
