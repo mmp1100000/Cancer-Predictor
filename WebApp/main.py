@@ -1,5 +1,7 @@
 from flask import Flask, escape, request, render_template, make_response, redirect, session, url_for
 from flask import Markup
+
+from data import generate_table
 from login import user_validation, user_registration, get_user_rol
 
 app = Flask(__name__, template_folder='template')
@@ -58,7 +60,8 @@ def records_page():
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
              <span class="glyphicon glyphicon-user"></span>\
               Log-out</a>')  # Logout HTML link
-        return make_response(render_template('records.html', signin=logout))  # Redirect to admin, show logout link
+        table = generate_table(session['username'],'all')
+        return make_response(render_template('records.html', signin=logout, table=Markup(table)))  # Redirect to admin, show logout link
 
 
 @app.route('/login')
