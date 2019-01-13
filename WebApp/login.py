@@ -1,6 +1,7 @@
 import hashlib
 
 from database.mysql_connector import Connection
+from flask import Markup
 
 conn = Connection()
 
@@ -31,6 +32,16 @@ def user_registration(firstname, lastname, email, password, rol):
     if len(query) != 0:
         return False
     else:
-        regist = conn.do_query('INSERT INTO user(username, password, email, rol) VALUES (\"'+'\",\"'.join(row)+'\");')
+        regist = conn.do_query(
+            'INSERT INTO user(username, password, email, rol) VALUES (\"' + '\",\"'.join(row) + '\");')
         conn.connection.commit()
-        return True
+        query = conn.do_query('SELECT username FROM user WHERE email=\"' + email + '\";')
+        if len(query) == 0:  # User not added
+            return False
+        else:
+            return True
+
+
+def get_user_rol(email):
+    rol = conn.do_query('SELECT rol FROM user WHERE email=\"' + email + '\";')
+    return rol[0]
