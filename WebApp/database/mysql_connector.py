@@ -25,6 +25,9 @@ class Connection:
                                             user=self.user,
                                             password=self.password)
 
+    def get_database(self):
+        return self.database
+
     def do_query(self, query):
         print(query)
         res = list()
