@@ -5,6 +5,8 @@
   <meta name="author" content="María del Rocío Cabello Toscano"/>
   <title>Administration</title>
   <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+  <link href="{{ url_for('static',filename='styles/403.css') }}" rel="stylesheet">
+
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 </head>
@@ -18,6 +20,32 @@
 </nav>
 
 {{error}}
+
+<div class='hover'>
+  <div class='background'>
+    <div class='door'>403</div>
+    <div class='rug'></div>
+  </div>
+  <div class='foreground'>
+    <div class='bouncer'>
+      <div class='head'>
+        <div class='neck'></div>
+        <div class='eye left'></div>
+        <div class='eye right'></div>
+        <div class='ear'></div>
+      </div>
+      <div class='body'></div>
+      <div class='arm'></div>
+    </div>
+    <div class='poles'>
+      <div class='pole left'></div>
+      <div class='pole right'></div>
+      <div class='rope'></div>
+    </div>
+  </div>
+</div>
+
+
 
 <div class="fixed-bottom">
   <img src="../static/foot.png" width="1500" height="80">

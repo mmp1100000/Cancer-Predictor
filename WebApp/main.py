@@ -4,7 +4,7 @@ from flask import Markup
 from data import generate_records_table, generate_table_from_db
 from login import user_validation, user_registration, get_user_rol
 
-from WebApp.data import generate_table_from_db
+# from WebApp.data import generate_table_from_db
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
@@ -15,8 +15,7 @@ def main_page():
     if 'username' in session:  # If user already logged in
 
         if get_user_rol(session['username']) == 'Admin':
-            return make_response(
-                render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
+            return redirect('/administration')
 
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
           <span class="glyphicon glyphicon-user"></span>\
@@ -40,32 +39,38 @@ def main_page():
 
 @app.route("/statistics")
 def admin_statistics():
-
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
         return make_response(
-            render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
+            render_template('ERROR.html'))  # Redirect to home, show logout link
     else:
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
          <span class="glyphicon glyphicon-user"></span>\
           Log-out</a>')  # Logout HTML link
         table = generate_records_table(session['username'], 'all')
         return make_response(
-            render_template('statistics.html', table=Markup(table), signin=logout))  # Redirect to admin, show logout link
+            render_template('statistics.html', table=Markup(table),
+                            signin=logout))  # Redirect to admin, show logout link
 
+
+@app.route("/administration")
+def admin_administration_home():
+    if get_user_rol(session['username']) == 'Admin':
+        return redirect('/administration/user')
+    else:
+        return redirect('/')
 
 @app.route("/administration/<string:selected_table>")
 def admin_administration(selected_table):
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
-        return make_response(
-            render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
+        return redirect('/')
     else:
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
          <span class="glyphicon glyphicon-user"></span>\
           Log-out</a>')  # Logout HTML link
         if selected_table == 'user':
             navigation = '<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" ' \
-                     'href="/administration/user">Users</a></li><li class="nav-item"><a class="nav-link" ' \
-                     'href="/administration/model">Models</a></li></ul>'
+                         'href="/administration/user">Users</a></li><li class="nav-item"><a class="nav-link" ' \
+                         'href="/administration/model">Models</a></li></ul>'
         elif selected_table == 'model':
             navigation = '<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link" ' \
                          'href="/administration/user">Users</a></li><li class="nav-item"><a class="nav-link active" ' \
@@ -75,7 +80,8 @@ def admin_administration(selected_table):
                 render_template('ERROR.html', error="The selected_table or URL does not exist"))
         table = generate_table_from_db(selected_table)
         return make_response(
-            render_template('administration.html', navigation=Markup(navigation), selected_table=Markup(table), signin=logout))  # Redirect to admin, show logout link
+            render_template('administration.html', navigation=Markup(navigation), selected_table=Markup(table),
+                            signin=logout))  # Redirect to admin, show logout link
 
 
 @app.route("/records")
@@ -89,7 +95,8 @@ def records_page():
              <span class="glyphicon glyphicon-user"></span>\
               Log-out</a>')  # Logout HTML link
         table = generate_records_table(session['username'], 'all')
-        return make_response(render_template('records.html', signin=logout, table=Markup(table)))  # Redirect to records, show logout link
+        return make_response(render_template('records.html', signin=logout,
+                                             table=Markup(table)))  # Redirect to records, show logout link
 
 
 @app.route('/login')

@@ -6,7 +6,7 @@ from markupsafe import Markup
 def generate_records_table(username, filter):
     rol = get_user_rol(username)
     if rol == "Doctor":
-        body = '<table class="table">\
+        body = '<table class="table" id="table">\
           <thead>\
             <tr>\
               <th scope="col">PATIENT ID</th>\
@@ -67,7 +67,7 @@ def generate_table_from_db(table):
     table = conn.do_query_mult_col(
         'SELECT * FROM ' + table + ';')
     if cols is not None:
-        body = '<table class="table">\
+        body = '<table class="table" id="table">\
                               <thead>'
         cols.append(' ')
         body += new_head(tuple(cols))
@@ -95,7 +95,9 @@ def new_row(row):
 def new_head(row):
     row_html = '<tr>'
     row_html += '<th scope="row">' + str(row[0]) + '</th>'
+    col_num=1
     for col in row[1:]:
-        row_html += '<th>' + str(col) + '</th>'
+        row_html += '<th onclick="sortTable('+str(col_num)+')"><a href="#">' + str(col) + '</a></th>'
+        col_num+=1
     row_html += '</tr>'
     return row_html
