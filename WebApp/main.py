@@ -4,7 +4,7 @@ from flask import Markup
 from data import generate_records_table, generate_table_from_db
 from login import user_validation, user_registration, get_user_rol
 
-from WebApp.data import generate_table_from_db
+#from WebApp.data import generate_table_from_db
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
