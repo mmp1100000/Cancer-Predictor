@@ -1,7 +1,6 @@
 import hashlib
 
 from database.mysql_connector import Connection
-from flask import Markup
 
 conn = Connection()
 
@@ -42,6 +41,3 @@ def user_registration(firstname, lastname, email, password, rol):
             return True
 
 
-def get_user_rol(email):
-    rol = conn.do_query('SELECT rol FROM user WHERE email=\"' + email + '\";')
-    return rol[0]

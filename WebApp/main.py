@@ -2,12 +2,9 @@ from flask import Flask, escape, request, render_template, make_response, redire
 from flask import Markup
 
 from data import generate_records_table, generate_table_from_db
-from data_update import update_user_rol
-from login import user_validation, user_registration, get_user_rol
-
-from plotly.offline.offline import _plot_html
-
-from WebApp.data import hist_from_db
+from data import hist_from_db
+from rol_management import update_user_rol, get_user_rol
+from login import user_validation, user_registration
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
@@ -121,7 +118,6 @@ def update_user():
         return redirect('/')
     return make_response(
         render_template('ERROR.html', error="Forbidden access"))
-        
 
 
 @app.route("/records")
@@ -210,6 +206,10 @@ def logout():
 #     return render_template('plot.html',
 #                            plot=Markup(plot))
 
+
+@app.route('/predictor')
+def predict():
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True)
