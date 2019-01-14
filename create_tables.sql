@@ -19,9 +19,9 @@ CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
 USE `mydb` ;
 
 -- -----------------------------------------------------
--- Table `mydb`.`usuario`
+-- Table `mydb`.`user`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`usuario` ;
+DROP TABLE IF EXISTS `mydb`.`user` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`user` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -73,11 +73,11 @@ CREATE TABLE IF NOT EXISTS `mydb`.`prediction` (
   `result` VARCHAR(45) NOT NULL,
   `model_id` INT NOT NULL,
   `patient_id` INT NOT NULL,
-  `usuario_id` INT NOT NULL,
-  PRIMARY KEY (`id`, `model_id`, `patient_id`, `usuario_id`),
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`id`, `model_id`, `patient_id`, `user_id`),
   INDEX `fk_prediction_model_idx` (`model_id` ASC),
   INDEX `fk_prediction_patient1_idx` (`patient_id` ASC),
-  INDEX `fk_prediction_usuario1_idx` (`usuario_id` ASC),
+  INDEX `fk_prediction_user1_idx` (`user_id` ASC),
   CONSTRAINT `fk_prediction_model`
     FOREIGN KEY (`model_id`)
     REFERENCES `mydb`.`model` (`id`)
@@ -88,9 +88,9 @@ CREATE TABLE IF NOT EXISTS `mydb`.`prediction` (
     REFERENCES `mydb`.`patient` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_prediction_usuario1`
-    FOREIGN KEY (`usuario_id`)
-    REFERENCES `mydb`.`usuario` (`id`)
+  CONSTRAINT `fk_prediction_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mydb`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

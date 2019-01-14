@@ -12,7 +12,7 @@ function update_db(row) {
       }
   }
   current_rol =rows[row].getElementsByTagName("td")[3].innerHTML
-  form_html = '<form onsubmit="myFunction(); return false;" id="selectorForm"><select id="rolSelect" onchange="this.form.submit();add_apply_button(' + row + ')"><option value="Doctor">Doctor</option><option value="Admin">Admin</option></select></form>';
+  form_html = '<form onsubmit="return false;" id="selectorForm"><select id="rolSelect" onchange="this.form.submit();add_apply_button(' + row + ')"><option value="Doctor">Doctor</option><option value="Admin">Admin</option></select></form>';
   pos = form_html.indexOf(current_rol+'\"')+current_rol.length+1
   console.log([form_html.slice(0, pos), ' selected', form_html.slice(pos)].join(''))
   rows[row].getElementsByTagName("td")[3].innerHTML=[form_html.slice(0, pos), ' selected', form_html.slice(pos)].join('');
