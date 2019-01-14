@@ -12,7 +12,7 @@ function sortTable(n) {
     rows = table.rows;
     /* Loop through all table rows (except the
     first, which contains table headers): */
-    for (i = 2; i < (rows.length - 1); i++) {
+    for (i = 1; i < (rows.length - 1); i++) {
       // Start by saying there should be no switching:
       shouldSwitch = false;
       /* Get the two elements you want to compare,
@@ -51,4 +51,10 @@ function sortTable(n) {
       }
     }
   }
+}
+
+
+function deleteRow(btn) {
+  var row = btn.parentNode.parentNode;
+  row.parentNode.removeChild(row);
 }

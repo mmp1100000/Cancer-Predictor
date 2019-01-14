@@ -13,7 +13,7 @@
   <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active"> <a class ="nav-link text-warning active"  style="font-size: 160%" href="/administration/user" > Administration </a></li>
-      <li class="nav-item active"> <a class ="nav-link text-warning active"  style="font-size: 160%" href="" > Statistics </a></li>
+      <li class="nav-item active"> <a class ="nav-link text-warning active"  style="font-weight: bold; font-size: 160%" href="" > Statistics </a></li>
     </ul>
   </div>
   <div class="mx-auto order-0">
@@ -30,14 +30,12 @@
   </div>
 </nav>
 
-<div class="btn-group" role="group" aria-label="Basic example">
-  <button type="button" class="btn btn-secondary">All</button>
-  <button type="button" class="btn btn-secondary">By user</button>
-  <button type="button" class="btn btn-secondary">By date</button>
+<div class="card"  style="box-shadow: 0px 2px 25px rgba(0, 0, 0, .25);">
+  <div class="card-body">
+    {{navigation}}
+    {{content}}
+  </div>
 </div>
-
-
-{{table}}
 
 <div class="fixed-bottom">
   <img src="../static/foot.png" width="1500" height="80">

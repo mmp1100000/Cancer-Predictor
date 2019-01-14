@@ -1,22 +1,35 @@
 from database.mysql_connector import Connection
 from login import get_user_rol
 from markupsafe import Markup
+import plotly.offline as py
+import plotly.graph_objs as go
+
+import numpy as np
 
 
-def generate_records_table(username, filter):
+def hist_from_db():
+    conn = Connection()
+    y = conn.do_query_mult_col('SELECT datetime FROM prediction;')
+    print(y)
+    x = list()
+    for i in range(0, len(y)):
+        x.append(y[i][0].day)
+
+    data = [go.Histogram(x=x)]
+    first_plot_url = py.plot(data, filename='./template/first_plot.html', auto_open=False)
+    with open(first_plot_url.replace("file://", "")) as plot_html_file:
+        return plot_html_file.read()
+
+
+def generate_records_table(username):
     rol = get_user_rol(username)
     if rol == "Doctor":
+        cols = ('PATIENT ID', 'DATE', 'DATA', 'MODEL', 'OUTPUT')
         body = '<table class="table" id="table">\
-          <thead>\
-            <tr>\
-              <th scope="col">PATIENT ID</th>\
-              <th scope="col">DATE</th>\
-              <th scope="col">DATA</th>\
-              <th scope="col">MODEL</th>\
-              <th scope="col">OUTPUT</th>\
-            </tr>\
-          </thead>\
-          <tbody>'
+                                              <thead>'
+        body += new_head(cols)
+        body += '</thead>  \
+                                    <tbody>'
         conn = Connection()
         if filter == 'all':
             prediction = conn.do_query_mult_col(
@@ -25,40 +38,27 @@ def generate_records_table(username, filter):
             if prediction is not None:  # There are data to show
                 for row in prediction:
                     body += new_row(row)
-        elif filter == 'file':
-            pass
-        elif filter == 'day':
-            pass
-        elif filter == 'subject':
-            pass
         body += '  </tbody>\
                     </table>'
         return body
     elif rol == "Admin":
-        body = '<table class="table">\
-          <thead>\
-            <tr>\
-              <th scope="col">USER ID</th>\
-              <th scope="col">DATE</th>\
-              <th scope="col">MODEL</th>\
-            </tr>\
-          </thead>\
-          <tbody>'
+        cols = ('PREDICTION ID', 'USER ID', 'DATE', 'MODEL')
+        body = '<table class="table" id="table">\
+                                      <thead>'
+        body += new_head(cols)
+        body += '</thead>  \
+                            <tbody>'
         conn = Connection()
-        if filter == 'all':
-            prediction = conn.do_query_mult_col(
-                'SELECT PRE.user_id, PRE.datetime, PRE.model_id FROM prediction PRE;')
-            print(prediction)
-            if prediction is not None:  # There are data to show
-                for row in prediction:
-                    body += new_row(row)
-        elif filter == 'user':
-            pass
-        elif filter == 'day':
-            pass
-        body += '  </tbody>\
+        prediction = conn.do_query_mult_col(
+            'SELECT PRE.id, PRE.user_id, PRE.datetime, PRE.model_id FROM prediction PRE;')
+        print(prediction)
+        if prediction is not None:  # There are data to show
+            for row in prediction:
+                body += new_row(row)
+            body += '  </tbody>\
                     </table>'
-        return body
+        print(body)
+    return body
 
 
 def generate_table_from_db(table):
@@ -75,7 +75,8 @@ def generate_table_from_db(table):
                     <tbody>'
         if table is not None:
             for row in table:
-                body += new_row(row).replace('</tr>', '<td><a href=""><span class="glyphicon glyphicon-remove"></span></a></td></tr>')
+                body += new_row(row).replace('</tr>', '<td><a href="#" onclick="deleteRow(this)"><span '
+                                                      'class="glyphicon glyphicon-remove"></span></a></td></tr>')
 
         body += '  </tbody>\
                         </table>'
@@ -95,9 +96,17 @@ def new_row(row):
 def new_head(row):
     row_html = '<tr>'
     row_html += '<th scope="row">' + str(row[0]) + '</th>'
-    col_num=1
+    col_num = 1
     for col in row[1:]:
         row_html += '<th onclick="sortTable('+str(col_num)+')"><a href="#">' + str(col) + '</a></th>'
-        col_num+=1
+        col_num += 1
     row_html += '</tr>'
     return row_html
+
+
+def delete_row():
+    pass
+
+
+if __name__ == '__main__':
+    hist_from_db()
