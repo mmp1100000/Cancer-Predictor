@@ -2,6 +2,7 @@ from flask import Flask, escape, request, render_template, make_response, redire
 from flask import Markup
 
 from data import generate_records_table, generate_table_from_db
+from data_update import update_user_rol
 from login import user_validation, user_registration, get_user_rol
 
 # from WebApp.data import generate_table_from_db
@@ -59,6 +60,7 @@ def admin_administration_home():
     else:
         return redirect('/')
 
+
 @app.route("/administration/<string:selected_table>")
 def admin_administration(selected_table):
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
@@ -82,6 +84,18 @@ def admin_administration(selected_table):
         return make_response(
             render_template('administration.html', navigation=Markup(navigation), selected_table=Markup(table),
                             signin=logout))  # Redirect to admin, show logout link
+
+
+@app.route("/administration/user/edit", methods=['POST'])
+def update_user():
+    if get_user_rol(session['username']) == 'Admin':
+        uid = request.form['uid']
+        rol = request.form['rol']
+        update_user_rol(uid, rol)
+        return redirect('/')
+    return make_response(
+        render_template('ERROR.html', error="Forbidden access"))
+        
 
 
 @app.route("/records")

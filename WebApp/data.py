@@ -63,19 +63,26 @@ def generate_records_table(username, filter):
 
 def generate_table_from_db(table):
     conn = Connection()
-    cols = conn.do_query('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
+    cols = conn.do_query(
+        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
     table = conn.do_query_mult_col(
         'SELECT * FROM ' + table + ';')
     if cols is not None:
         body = '<table class="table" id="table">\
                               <thead>'
-        cols.append(' ')
+        cols.append(' ')  # For delete column
+        cols.append(' ')  # For update column
         body += new_head(tuple(cols))
         body += '</thead>  \
                     <tbody>'
         if table is not None:
+            row_num = 1
             for row in table:
-                body += new_row(row).replace('</tr>', '<td><a href=""><span class="glyphicon glyphicon-remove"></span></a></td></tr>')
+                body += new_row(row).replace('</tr>',
+                                             '<td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
+                body += '<td><a href="#"><span class="glyphicon glyphicon-pencil" onclick="update_db(' + str(
+                    row_num) + ')"></span></a></td></tr>'  # Adds delete button to each row
+                row_num += 1
 
         body += '  </tbody>\
                         </table>'
@@ -95,9 +102,9 @@ def new_row(row):
 def new_head(row):
     row_html = '<tr>'
     row_html += '<th scope="row">' + str(row[0]) + '</th>'
-    col_num=1
+    col_num = 1
     for col in row[1:]:
-        row_html += '<th onclick="sortTable('+str(col_num)+')"><a href="#">' + str(col) + '</a></th>'
-        col_num+=1
+        row_html += '<th onclick="sortTable(' + str(col_num) + ')"><a href="#">' + str(col) + '</a></th>'
+        col_num += 1
     row_html += '</tr>'
     return row_html
