@@ -69,12 +69,13 @@ def generate_table_from_db(table):
     if cols is not None:
         body = '<table class="table" id="table">\
                               <thead>'
+        cols.append(' ')
         body += new_head(tuple(cols))
-        body += '<th> </th></thead>  \
+        body += '</thead>  \
                     <tbody>'
         if table is not None:
             for row in table:
-                body += new_row(row).replace('</tr>', '<a href=""><span class="glyphicon glyphicon-remove"></span></a></tr>')
+                body += new_row(row).replace('</tr>', '<td><a href=""><span class="glyphicon glyphicon-remove"></span></a></td></tr>')
 
         body += '  </tbody>\
                         </table>'
