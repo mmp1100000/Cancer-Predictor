@@ -5,7 +5,9 @@ from data import generate_records_table, generate_table_from_db
 from data_update import update_user_rol
 from login import user_validation, user_registration, get_user_rol
 
-# from WebApp.data import generate_table_from_db
+from plotly.offline.offline import _plot_html
+
+from WebApp.data import hist_from_db
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
@@ -22,7 +24,8 @@ def main_page():
           <span class="glyphicon glyphicon-user"></span>\
           Log-out</a>')  # Logout HTML link
         nav = Markup(
-            '<li class="nav-item active"> <a class ="nav-link text-warning active"  style="font-size: 160%" href="" > '
+            '<li class="nav-item active"> <a class ="nav-link text-warning active"  style=" font-weight: bold; '
+            'font-size: 160%" href="" > '
             'Predictor </a></li><li class="nav-item"> <a class ="nav-link text-warning" style="font-size: '
             '160%" href="/records" > Records </a></li>')
         return make_response(
@@ -32,14 +35,23 @@ def main_page():
                   <span class="glyphicon glyphicon-user"></span>\
                   Sign-in/Log-in</a>')  # If user not logged in, show login link
         anonymous_nav = Markup(
-            '<li class="nav-item active"><a class ="nav-link text-warning active"  style="font-size: 160%" href="" > '
+            '<li class="nav-item active"><a class ="nav-link text-warning active"  style="font-weight: bold; '
+            'font-size: 160%" href="" > '
             'Predictor </a></li>')
         return render_template('index.html', navbar=anonymous_nav,
                                signin=signin)  # Redirect to home, show signin link if not logged in.
 
 
 @app.route("/statistics")
-def admin_statistics():
+def admin_statistics_home():
+    if get_user_rol(session['username']) == 'Admin':
+        return redirect('/statistics/tables')
+    else:
+        return redirect('/')
+
+
+@app.route("/statistics/<string:selected_content>")
+def admin_statistics(selected_content):
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
         return make_response(
             render_template('ERROR.html'))  # Redirect to home, show logout link
@@ -47,9 +59,23 @@ def admin_statistics():
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
          <span class="glyphicon glyphicon-user"></span>\
           Log-out</a>')  # Logout HTML link
-        table = generate_records_table(session['username'], 'all')
+
+        if selected_content == 'tables':
+            navigation = '<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" ' \
+                         'href="/statistics/tables">Tables</a></li><li class="nav-item"><a class="nav-link" ' \
+                         'href="/statistics/graphs">Graphs</a></li></ul>'
+            content = generate_records_table(session['username'])
+        elif selected_content == 'graphs':
+            navigation = '<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link" ' \
+                         'href="/statistics/tables">Tables</a></li><li class="nav-item"><a class="nav-link active" ' \
+                         'href="/statistics/graphs">Graphs</a></li></ul>'
+            content = hist_from_db()
+        else:
+            return make_response(
+                render_template('ERROR.html', error="The selected_table or URL does not exist"))
+
         return make_response(
-            render_template('statistics.html', table=Markup(table),
+            render_template('statistics.html', content=Markup(content), navigation=Markup(navigation),
                             signin=logout))  # Redirect to admin, show logout link
 
 
@@ -108,7 +134,7 @@ def records_page():
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
              <span class="glyphicon glyphicon-user"></span>\
               Log-out</a>')  # Logout HTML link
-        table = generate_records_table(session['username'], 'all')
+        table = generate_records_table(session['username'])
         return make_response(render_template('records.html', signin=logout,
                                              table=Markup(table)))  # Redirect to records, show logout link
 
@@ -175,6 +201,14 @@ def logout():
     # remove the username from the session if it's there
     session.pop('username', None)
     return redirect(url_for('main_page'))
+
+
+# @app.route('/plot')
+# def plot():
+#     with open('basic_histogram.html', 'r') as f:
+#         plot = f.read()
+#     return render_template('plot.html',
+#                            plot=Markup(plot))
 
 
 if __name__ == '__main__':
