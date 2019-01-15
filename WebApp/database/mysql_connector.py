@@ -6,9 +6,9 @@ from mysql.connector import Error
 
 class Connection:
 
-    def __init__(self):
+    def __init__(self, json_path='database/mysql_connection_settings.json'):
         try:
-            json1_file = open('database/mysql_connection_settings.json')
+            json1_file = open(json_path)
             json1_str = json1_file.read()
             json1_data = json.loads(json1_str)
             self.host = json1_data['host']
