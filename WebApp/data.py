@@ -59,12 +59,13 @@ def generate_records_table(username):
     return body
 
 
-def generate_table_from_db(table):
+def generate_table_from_db(table_name):
     conn = Connection()
     cols = conn.do_query(
-        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
+        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table_name + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
+    index_id = cols.index('id')
     table = conn.do_query_mult_col(
-        'SELECT * FROM ' + table + ';')
+        'SELECT * FROM ' + table_name + ';')
     if cols is not None:
         body = '<table class="table" id="table">\
                               <thead>'
@@ -76,8 +77,11 @@ def generate_table_from_db(table):
         if table is not None:
             row_num = 1
             for row in table:
+                row_id = row[index_id]
+                print(row_id)
+                print(type(row_id))
                 body += new_row(row).replace('</tr>',
-                                             '<td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
+                                             '<td><a href="/administration/' + table_name + '/delete/' + str(row_id) + '"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
                 body += '<td><a href="#"><span class="glyphicon glyphicon-pencil" onclick="update_db(' + str(
                     row_num) + ')"></span></a></td></tr>'  # Adds delete button to each row
                 row_num += 1
@@ -106,3 +110,17 @@ def new_head(row):
         col_num += 1
     row_html += '</tr>'
     return row_html
+
+
+def delete_by_id(table, uid):
+    print(uid)
+    conn = Connection()
+    if conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';') is not None:
+        conn.connection.commit
+        return True
+    else:
+        return False
+
+
+if __name__ == '__main__':
+    delete_by_id('user', 5)

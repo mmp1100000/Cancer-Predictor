@@ -1,8 +1,7 @@
 from flask import Flask, escape, request, render_template, make_response, redirect, session, url_for
 from flask import Markup
 
-from data import generate_records_table, generate_table_from_db
-from data import hist_from_db
+from data import generate_records_table, generate_table_from_db, hist_from_db, delete_by_id
 from rol_management import update_user_rol, get_user_rol
 from login import user_validation, user_registration
 
@@ -10,6 +9,7 @@ app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 
 
+# ------ DOCTOR AND ANONYMOUS PREDICTOR -------
 @app.route("/")  # predictor
 def main_page():
     if 'username' in session:  # If user already logged in
@@ -39,6 +39,28 @@ def main_page():
                                signin=signin)  # Redirect to home, show signin link if not logged in.
 
 
+@app.route('/predictor')
+def predict():
+    pass
+
+
+# ------ DOCTOR RECORDS -------
+@app.route("/records")
+def records_page():
+    rol = get_user_rol(session['username'])
+    if 'username' not in session or rol != 'Doctor':
+        return make_response(
+            render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
+    else:
+        logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
+             <span class="glyphicon glyphicon-user"></span>\
+              Log-out</a>')  # Logout HTML link
+        table = generate_records_table(session['username'])
+        return make_response(render_template('records.html', signin=logout,
+                                             table=Markup(table)))  # Redirect to records, show logout link
+
+
+# ------ ADMIN -------
 @app.route("/statistics")
 def admin_statistics_home():
     if get_user_rol(session['username']) == 'Admin':
@@ -84,7 +106,7 @@ def admin_administration_home():
         return redirect('/')
 
 
-@app.route("/administration/<string:selected_table>")
+@app.route("/administration/<string:selected_table>", methods=['GET'])
 def admin_administration(selected_table):
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
         return redirect('/')
@@ -120,21 +142,21 @@ def update_user():
         render_template('ERROR.html', error="Forbidden access"))
 
 
-@app.route("/records")
-def records_page():
-    rol = get_user_rol(session['username'])
-    if 'username' not in session or rol != 'Doctor':
-        return make_response(
-            render_template('ERROR.html', error="Forbidden access"))  # Redirect to home, show logout link
+@app.route("/administration/<string:selected_table>/delete/<int:uid>", methods=['GET'])
+def delete_user(selected_table, uid):
+    if get_user_rol(session['username']) == 'Admin':
+        if delete_by_id(selected_table, uid):
+            # It was possible to delete
+            return redirect('/')
+        else:
+            make_response(
+                render_template('ERROR.html', error="Invalid action: Cannot delete"))
     else:
-        logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
-             <span class="glyphicon glyphicon-user"></span>\
-              Log-out</a>')  # Logout HTML link
-        table = generate_records_table(session['username'])
-        return make_response(render_template('records.html', signin=logout,
-                                             table=Markup(table)))  # Redirect to records, show logout link
+        return make_response(
+        render_template('ERROR.html', error="Forbidden access"))
 
 
+# ------ USER MANAGEMENT -------
 @app.route('/login')
 def login_page():
     if 'username' in session:  # If user already logged in
@@ -197,19 +219,6 @@ def logout():
     # remove the username from the session if it's there
     session.pop('username', None)
     return redirect(url_for('main_page'))
-
-
-# @app.route('/plot')
-# def plot():
-#     with open('basic_histogram.html', 'r') as f:
-#         plot = f.read()
-#     return render_template('plot.html',
-#                            plot=Markup(plot))
-
-
-@app.route('/predictor')
-def predict():
-    pass
 
 
 if __name__ == '__main__':
