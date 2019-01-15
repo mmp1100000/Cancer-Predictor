@@ -1,1 +1,2 @@
-def get_models()
+def get_models_selector():
+    pass
