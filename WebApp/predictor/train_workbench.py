@@ -53,7 +53,7 @@ def evaluate_model(model, x_test, y_test, batch_size=128):
 
 def save_model(model, description, x_test, y_test, model_type='nnet'):
     conn = Connection('../database/mysql_connection_settings.json')
-    model_name = 'leukemia-' + time.strftime("%Y-%m-%d %H:%M:%S")
+    model_name = 'leukemia-' + time.strftime("%Y-%m-%d_%H:%M:%S")
     outfile = open('models/' + model_name + '.pkl', 'wb')
     pickle.dump(model, outfile)
     outfile.close()
