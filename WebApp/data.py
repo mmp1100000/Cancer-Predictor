@@ -1,10 +1,8 @@
-from database.mysql_connector import Connection
-from login import get_user_rol
-from markupsafe import Markup
-import plotly.offline as py
 import plotly.graph_objs as go
+import plotly.offline as py
 
-import numpy as np
+from database.mysql_connector import Connection
+from rol_management import get_user_rol
 
 
 def hist_from_db():
