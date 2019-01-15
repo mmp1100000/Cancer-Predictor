@@ -60,6 +60,7 @@ def generate_table_from_db(table_name):
     cols = conn.do_query(
         'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table_name + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
     index_id = cols.index('id')
+    num_cols = len(cols)
     table = conn.do_query_mult_col(
         'SELECT * FROM ' + table_name + ';')
     if cols is not None:
@@ -75,13 +76,27 @@ def generate_table_from_db(table_name):
             for row in table:
                 row_id = row[index_id]
                 body += new_row(row).replace('</tr>',
-                                             '<td><a href="/administration/' + table_name + '/delete/' + str(row_id) + '"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
+                                             '<td><a href="/administration/' + table_name + '/delete/' + str(
+                                                 row_id) + '"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
                 body += '<td><a href="#"><span class="glyphicon glyphicon-pencil" onclick="update_db(' + str(
                     row_num) + ')"></span></a></td></tr>'  # Adds delete button to each row
                 row_num += 1
+        insert_row = list()
+        for i in range(1, num_cols + 1):
+            if i == index_id+1:
+                insert_row.append(' ')
+            else:
+                insert_row.append('<input style= "border-width: thin; border-radius: 10px ; box-sizing: border-box; '
+                                  'width: 100%" '
+                                  'type="text"></input>')
+        insert_row.append('<a href="#"><span class="glyphicon '
+                          'glyphicon-plus" onclick="document.getElementById(\'form_funciona\').submit();"></span></a>')
+        insert_row.append(' ')
+        body += new_insert_row_form(insert_row, table_name)
+        print(body)
+        body += '  </tbody>'
+        body += '</table>'
 
-        body += '  </tbody>\
-                        </table>'
     return body
 
 
@@ -91,6 +106,16 @@ def new_row(row):
     for col in row[1:]:
         row_html += '<td>' + str(col) + '</td>'
     row_html += '</tr>'
+    return row_html
+
+
+def new_insert_row_form(row, table_name):
+    row_html = '<form class="tr" id="form_funciona" method="post" action="/administration/' + table_name + '/insert">'
+    print(row_html)
+    row_html += '<span class="td">' + str(row[0]) + '</span>'
+    for col in row[1:]:
+        row_html += '<span class="td">' + str(col) + '</span>'
+    row_html += '</form>'
     return row_html
 
 
@@ -114,7 +139,6 @@ def delete_by_id(table, uid):
         conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
         conn.connection.commit()
         deleted = conn.do_query('SELECT * FROM ' + table + ';')
-        print("BORRADO" + str(uid))
         return True
     else:
         return False

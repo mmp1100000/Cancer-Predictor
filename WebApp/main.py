@@ -155,6 +155,16 @@ def delete_user(selected_table, uid):
         return make_response(render_template('ERROR.html', error="Forbidden access"))
 
 
+@app.route("/administration/<string:selected_table>/insert", methods=['POST'])
+def admin_insert(selected_table):
+    print("llega")
+    if get_user_rol(session['username']) == 'Admin':
+        print(request)
+        return redirect('/')
+    return make_response(
+        render_template('ERROR.html', error="Forbidden access"))
+
+
 # ------ USER MANAGEMENT -------
 @app.route('/login')
 def login_page():
