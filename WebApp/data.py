@@ -8,7 +8,6 @@ from rol_management import get_user_rol
 def hist_from_db():
     conn = Connection()
     y = conn.do_query_mult_col('SELECT datetime FROM prediction;')
-    print(y)
     x = list()
     for i in range(0, len(y)):
         x.append(y[i][0].day)
@@ -32,7 +31,6 @@ def generate_records_table(username):
         if filter == 'all':
             prediction = conn.do_query_mult_col(
                 'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, PRE.result, PRE.model_id FROM prediction PRE, user U WHERE U.email=\"' + username + '\" and U.id=PRE.user_id;')
-            print(prediction)
             if prediction is not None:  # There are data to show
                 for row in prediction:
                     body += new_row(row)
@@ -49,13 +47,11 @@ def generate_records_table(username):
         conn = Connection()
         prediction = conn.do_query_mult_col(
             'SELECT PRE.id, PRE.user_id, PRE.datetime, PRE.model_id FROM prediction PRE;')
-        print(prediction)
         if prediction is not None:  # There are data to show
             for row in prediction:
                 body += new_row(row)
             body += '  </tbody>\
                     </table>'
-        print(body)
     return body
 
 
@@ -78,8 +74,6 @@ def generate_table_from_db(table_name):
             row_num = 1
             for row in table:
                 row_id = row[index_id]
-                print(row_id)
-                print(type(row_id))
                 body += new_row(row).replace('</tr>',
                                              '<td><a href="/administration/' + table_name + '/delete/' + str(row_id) + '"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
                 body += '<td><a href="#"><span class="glyphicon glyphicon-pencil" onclick="update_db(' + str(
@@ -88,7 +82,6 @@ def generate_table_from_db(table_name):
 
         body += '  </tbody>\
                         </table>'
-        print(body)
     return body
 
 
@@ -115,8 +108,13 @@ def new_head(row):
 def delete_by_id(table, uid):
     print(uid)
     conn = Connection()
-    if conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';') is not None:
-        conn.connection.commit
+    to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+    print(to_delete)
+    if to_delete is not None:
+        conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+        conn.connection.commit()
+        deleted = conn.do_query('SELECT * FROM ' + table + ';')
+        print("BORRADO" + str(uid))
         return True
     else:
         return False

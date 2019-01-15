@@ -147,13 +147,12 @@ def delete_user(selected_table, uid):
     if get_user_rol(session['username']) == 'Admin':
         if delete_by_id(selected_table, uid):
             # It was possible to delete
-            return redirect('/')
+            return redirect("/administration/"+selected_table)
         else:
-            make_response(
+            return make_response(
                 render_template('ERROR.html', error="Invalid action: Cannot delete"))
     else:
-        return make_response(
-        render_template('ERROR.html', error="Forbidden access"))
+        return make_response(render_template('ERROR.html', error="Forbidden access"))
 
 
 # ------ USER MANAGEMENT -------
