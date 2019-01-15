@@ -8,7 +8,6 @@ from rol_management import get_user_rol
 def hist_from_db():
     conn = Connection()
     y = conn.do_query_mult_col('SELECT datetime FROM prediction;')
-    print(y)
     x = list()
     for i in range(0, len(y)):
         x.append(y[i][0].day)
@@ -32,7 +31,6 @@ def generate_records_table(username):
         if filter == 'all':
             prediction = conn.do_query_mult_col(
                 'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, PRE.result, PRE.model_id FROM prediction PRE, user U WHERE U.email=\"' + username + '\" and U.id=PRE.user_id;')
-            print(prediction)
             if prediction is not None:  # There are data to show
                 for row in prediction:
                     body += new_row(row)
@@ -49,22 +47,21 @@ def generate_records_table(username):
         conn = Connection()
         prediction = conn.do_query_mult_col(
             'SELECT PRE.id, PRE.user_id, PRE.datetime, PRE.model_id FROM prediction PRE;')
-        print(prediction)
         if prediction is not None:  # There are data to show
             for row in prediction:
                 body += new_row(row)
             body += '  </tbody>\
                     </table>'
-        print(body)
     return body
 
 
-def generate_table_from_db(table):
+def generate_table_from_db(table_name):
     conn = Connection()
     cols = conn.do_query(
-        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
+        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\"' + table_name + '\" AND TABLE_SCHEMA = \'' + conn.get_database() + '\' ORDER BY ORDINAL_POSITION;')
+    index_id = cols.index('id')
     table = conn.do_query_mult_col(
-        'SELECT * FROM ' + table + ';')
+        'SELECT * FROM ' + table_name + ';')
     if cols is not None:
         body = '<table class="table" id="table">\
                               <thead>'
@@ -76,15 +73,15 @@ def generate_table_from_db(table):
         if table is not None:
             row_num = 1
             for row in table:
+                row_id = row[index_id]
                 body += new_row(row).replace('</tr>',
-                                             '<td><a href="#"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
+                                             '<td><a href="/administration/' + table_name + '/delete/' + str(row_id) + '"><span class="glyphicon glyphicon-remove"></span></a></td>')  # Adds delete button to each row
                 body += '<td><a href="#"><span class="glyphicon glyphicon-pencil" onclick="update_db(' + str(
                     row_num) + ')"></span></a></td></tr>'  # Adds delete button to each row
                 row_num += 1
 
         body += '  </tbody>\
                         </table>'
-        print(body)
     return body
 
 
@@ -106,3 +103,22 @@ def new_head(row):
         col_num += 1
     row_html += '</tr>'
     return row_html
+
+
+def delete_by_id(table, uid):
+    print(uid)
+    conn = Connection()
+    to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+    print(to_delete)
+    if to_delete is not None:
+        conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+        conn.connection.commit()
+        deleted = conn.do_query('SELECT * FROM ' + table + ';')
+        print("BORRADO" + str(uid))
+        return True
+    else:
+        return False
+
+
+if __name__ == '__main__':
+    delete_by_id('user', 5)

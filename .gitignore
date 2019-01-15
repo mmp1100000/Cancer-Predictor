@@ -8,3 +8,5 @@ WebApp/__pycache__/
 \.idea/
 
 WebApp/database/__pycache__/
+
+WebApp/predictor/__pycache__/
