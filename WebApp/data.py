@@ -2,7 +2,7 @@ import plotly.graph_objs as go
 import plotly.offline as py
 
 from database.mysql_connector import Connection
-from rol_management import get_user_rol
+from db_management import get_user_rol, delete_by_id
 
 
 def hist_from_db():
@@ -55,6 +55,28 @@ def generate_records_table(username):
     return body
 
 
+def insert_row_model(num_cols, index_id, insert_row, cols):
+    for i in range(1, num_cols + 1):
+        if i == index_id + 1 or cols[i - 1] in ['train_date', 'acc']:
+            insert_row.append(' ')
+        elif cols[i - 1] in ['model_type', 'disease']:
+            insert_row.append('<input class="form-control" name=\"' + cols[
+                i - 1] + '\" style="border-width: thin; border-radius: 10px ; box-sizing: border-box; '
+                         'width: 100%" '
+                         'type="text" required></input>')
+        elif cols[i - 1] in ['dataset_description', 'model_path', 'test_data_path']:
+            file_description = {'dataset_description': 'Json file',
+                                'model_path': 'Python pkl file',
+                                'test_data_path': 'csv or arff file format'}
+            insert_row.append('<div class="input-group">\
+                <div class="custom-file">\
+                    <input name=\"' + cols[i - 1] + '\" style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>\
+                    <label class="custom-file-label" for="inputGroupFile01">' + file_description[cols[i - 1]] + '</label>\
+                </div>\
+            </div>')
+    return insert_row
+
+
 def generate_table_from_db(table_name):
     conn = Connection()
     cols = conn.do_query(
@@ -64,7 +86,8 @@ def generate_table_from_db(table_name):
     table = conn.do_query_mult_col(
         'SELECT * FROM ' + table_name + ';')
     if cols is not None:
-        body = '<table class="table" id="table">\
+        body = '<form class="needs-validation" id="form_funciona" method="post" action="/administration/' + table_name + '/insert" enctype=multipart/form-data>'
+        body += '<table class="table" id="table">\
                               <thead>'
         cols.append(' ')  # For delete column
         cols.append(' ')  # For update column
@@ -82,21 +105,25 @@ def generate_table_from_db(table_name):
                     row_num) + ')"></span></a></td></tr>'  # Adds delete button to each row
                 row_num += 1
         insert_row = list()
-        for i in range(1, num_cols + 1):
-            if i == index_id+1:
-                insert_row.append(' ')
-            else:
-                insert_row.append('<input style= "border-width: thin; border-radius: 10px ; box-sizing: border-box; '
-                                  'width: 100%" '
-                                  'type="text"></input>')
-        insert_row.append('<a href="#"><span class="glyphicon '
-                          'glyphicon-plus" onclick="document.getElementById(\'form_funciona\').submit();"></span></a>')
+        if table_name == 'model':
+            insert_row = insert_row_model(num_cols, index_id, insert_row, cols)
+        else:
+            for i in range(1, num_cols + 1):
+                if i == index_id + 1:
+                    insert_row.append(' ')
+                else:
+                    insert_row.append('<input class="form-control" name=\"' + cols[
+                        i - 1] + '\" style="border-width: thin; border-radius: 10px ; box-sizing: border-box; '
+                                 'width: 100%" '
+                                 'type="text" required></input>')
+        insert_row.append(
+            '<button class="btn btn-default" type="submit"><a href="#"><span class="glyphicon glyphicon-plus"></span></a></button>')
         insert_row.append(' ')
-        body += new_insert_row_form(insert_row, table_name)
+        body += new_insert_row_form(insert_row)
         print(body)
         body += '  </tbody>'
         body += '</table>'
-
+        body += '</form>'
     return body
 
 
@@ -109,13 +136,10 @@ def new_row(row):
     return row_html
 
 
-def new_insert_row_form(row, table_name):
-    row_html = '<form class="tr" id="form_funciona" method="post" action="/administration/' + table_name + '/insert">'
-    print(row_html)
-    row_html += '<span class="td">' + str(row[0]) + '</span>'
+def new_insert_row_form(row):
+    row_html = '<td>' + str(row[0]) + '</td>'
     for col in row[1:]:
-        row_html += '<span class="td">' + str(col) + '</span>'
-    row_html += '</form>'
+        row_html += '<td>' + str(col) + '</td>'
     return row_html
 
 
@@ -128,20 +152,6 @@ def new_head(row):
         col_num += 1
     row_html += '</tr>'
     return row_html
-
-
-def delete_by_id(table, uid):
-    print(uid)
-    conn = Connection()
-    to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
-    print(to_delete)
-    if to_delete is not None:
-        conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
-        conn.connection.commit()
-        deleted = conn.do_query('SELECT * FROM ' + table + ';')
-        return True
-    else:
-        return False
 
 
 if __name__ == '__main__':
