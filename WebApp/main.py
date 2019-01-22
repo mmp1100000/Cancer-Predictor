@@ -5,6 +5,8 @@ from data import generate_records_table, generate_table_from_db, hist_from_db
 from db_management import update_user_rol, get_user_rol, delete_by_id, new_model
 from login import user_validation, user_registration
 
+from WebApp.db_management import insert_new_user
+
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 
@@ -163,7 +165,7 @@ def admin_insert(selected_table):
             new_password = request.form['password']
             new_email = request.form['email']
             rol = request.form['rol']
-            new_user(new_user, new_email, new_password, rol)
+            insert_new_user(new_user, new_email, new_password, rol)
             return redirect('/')
         elif selected_table == 'model':
             disease = request.form['disease']
