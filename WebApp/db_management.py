@@ -1,7 +1,6 @@
 import hashlib
 
 from database.mysql_connector import Connection
-from predictor.train_workbench import save_model, process_dataset
 
 
 def update_user_rol(uid, new_rol):
@@ -40,8 +39,8 @@ def insert_new_user(username, email, password, rol):
 
 
 def new_model(disease, model_type, dataset_description, model_path, test_data_path):
-    #test_data = process_dataset(test_data_path)
+    # test_data = process_dataset(test_data_path)
     print(type(dataset_description))
     print(type(model_path))
     print(type(test_data_path))
-    #save_model(model_path, dataset_description, test_data['x'], test_data['y'], model_type)
+    # save_model(model_path, dataset_description, test_data['x'], test_data['y'], model_type)
