@@ -47,7 +47,7 @@ def evaluate_model(model, x_test, y_test, batch_size=128):
 
 def save_model(model, model_info, x_test, y_test, model_type='nnet'):
     conn = Connection('../database/mysql_connection_settings.json')
-    model_name = 'leukemia-' + time.strftime("%Y-%m-%d%H:%M:%S")
+    model_name = 'leukemia-' + time.strftime("%Y-%m-%d_%H%M%S")
     outfile = open('models/' + model_name, 'wb')
     pickle.dump(model, outfile)
     outfile.close()
@@ -56,7 +56,7 @@ def save_model(model, model_info, x_test, y_test, model_type='nnet'):
         json.dump(model_info, f)
     conn.do_query(
         'INSERT INTO model(train_date, acc, model_type, dataset_description, model_path) values (\"' + time.strftime(
-            "%Y-%m-%d %H:%M:%S") + '\",\"' + str(
+            "%Y-%m-%d_%H:%M:%S") + '\",\"' + str(
             round(evaluate_model(model, x_test, y_test)[
                       1], 3)) + '\",\"' + model_type + '\",\"' + json_path + '\",\"' + model_name + '\");')
     conn.connection.commit()
