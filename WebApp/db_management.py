@@ -1,3 +1,5 @@
+import hashlib
+
 from database.mysql_connector import Connection
 from predictor.train_workbench import save_model, process_dataset
 
@@ -28,10 +30,14 @@ def delete_by_id(table, uid):
         return False
 
 
-def new_user(username, email, password, rol):
+def insert_new_user(username, email, password, rol):
+    input_password = hashlib.sha256(password.encode("utf8"))
+    hex_dig = input_password.hexdigest()
     conn = Connection()
     conn.do_query(
-        'INSERT INTO user(username, password, email, rol) VALUES (\'' + username + '\',\'' + password + '\',\'' + email + '\',\'' + rol + '\');')
+        'INSERT INTO user(username, password, email, rol) VALUES (\'' + username + '\',\'' + hex_dig + '\',\'' + email + '\',\'' + rol + '\');')
+    conn.connection.commit()
+
 
 def new_model(disease, model_type, dataset_description, model_path, test_data_path):
     #test_data = process_dataset(test_data_path)
