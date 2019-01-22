@@ -1,8 +1,8 @@
 from flask import Flask, escape, request, render_template, make_response, redirect, session, url_for
 from flask import Markup
 
-from data import generate_records_table, generate_table_from_db, hist_from_db, delete_by_id
-from rol_management import update_user_rol, get_user_rol
+from data import generate_records_table, generate_table_from_db, hist_from_db
+from db_management import update_user_rol, get_user_rol, delete_by_id, new_model
 from login import user_validation, user_registration
 
 app = Flask(__name__, template_folder='template')
@@ -147,12 +147,34 @@ def delete_user(selected_table, uid):
     if get_user_rol(session['username']) == 'Admin':
         if delete_by_id(selected_table, uid):
             # It was possible to delete
-            return redirect("/administration/"+selected_table)
+            return redirect("/administration/" + selected_table)
         else:
             return make_response(
                 render_template('ERROR.html', error="Invalid action: Cannot delete"))
     else:
         return make_response(render_template('ERROR.html', error="Forbidden access"))
+
+
+@app.route("/administration/<string:selected_table>/insert", methods=['POST'])
+def admin_insert(selected_table):
+    if get_user_rol(session['username']) == 'Admin':
+        if selected_table == 'user':
+            new_user = request.form['username']
+            new_password = request.form['password']
+            new_email = request.form['email']
+            rol = request.form['rol']
+            new_user(new_user, new_email, new_password, rol)
+            return redirect('/')
+        elif selected_table == 'model':
+            disease = request.form['disease']
+            model_type = request.form['model_type']
+            dataset_description = request.files['dataset_description']
+            model_path = request.files['model_path']
+            test_data_path = request.files['test_data_path']
+            new_model(disease, model_type, dataset_description, model_path, test_data_path)
+            return redirect('/administration/model')
+    return make_response(
+        render_template('ERROR.html', error="Forbidden access"))
 
 
 # ------ USER MANAGEMENT -------
