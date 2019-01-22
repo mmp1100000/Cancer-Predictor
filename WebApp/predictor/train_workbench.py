@@ -6,6 +6,8 @@ import pandas as pd
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
 from scipy.io import arff
+import pandas as pd
+import time
 
 from database.mysql_connector import Connection
 
