@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 from data import generate_records_table, generate_table_from_db, hist_from_db
 from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, insert_new_user, \
-    get_models_html_selector
+    get_models_html_selector, get_json_values
 from login import user_validation, user_registration
 from predictor.train_workbench import evaluate_user_data
 
@@ -17,6 +17,7 @@ app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 app.config['DATA_TEST_DIR'] = 'testdata/'
 app.config['MODEL_DATA_TEST_DIR'] = 'modeltestdata/'
+
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
 @app.route("/")  # predictor
@@ -58,10 +59,11 @@ def predict():
         file = request.files['file']
         cancer_type = request.form['disease']
         model_type = request.form['model']
-        filename = time.strftime("%Y-%m-%d_%H%M%S")+secure_filename(file.filename)
+        filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(file.filename)
         file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
         evaluate_user_data(filename, cancer_type, model_type)
     return redirect('/')
+
 
 # ------ DOCTOR RECORDS -------
 @app.route("/records")
@@ -161,6 +163,12 @@ def update_user():
         render_template('ERROR.html', error="Forbidden access"))
 
 
+@app.route("/get_model_info", methods=['POST'])
+def get_model_info():
+    res = request.form['res'].split(";")
+    return Markup(get_json_values(res[0], res[1]))
+
+
 @app.route("/administration/<string:selected_table>/delete/<int:uid>", methods=['GET'])
 def delete_user(selected_table, uid):
     if get_user_rol(session['username']) == 'Admin':
@@ -192,7 +200,8 @@ def admin_insert(selected_table):
             test_data_path = request.files['test_data_path']
             filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(test_data_path.filename)
             test_data_path.save(os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
-            new_model(disease, model_type, dataset_description, model_path, os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
+            new_model(disease, model_type, dataset_description, model_path,
+                      os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
             return redirect('/administration/model')
     return make_response(
         render_template('ERROR.html', error="Forbidden access"))
