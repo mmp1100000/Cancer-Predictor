@@ -8,7 +8,7 @@ from scipy.io import arff
 
 from database.mysql_connector import Connection
 from db_management import get_model_path
-
+import csv
 
 def process_dataset(filepath, class_name, class_val_0, class_val_1):
     data = arff.loadarff(filepath)
@@ -75,11 +75,17 @@ def evaluate_user_data(test_data_file_name, disease_name, model_name):
     print(extension)
     if extension == 'arff':
         data = arff.loadarff('testdata/' + test_data_file_name)
-    df_test = pd.DataFrame(data[0])
-    if len(df_test.columns)-1 != num_of_variables:
+        df_test = pd.DataFrame(data[0])
+    elif extension == 'tsv':
+        data = pd.DataFrame.from_csv('testdata/' + test_data_file_name, sep='\t', header=None)
+        df_test = data.loc[:, 1:len(data.keys())-1]
+        patients = list(data.index)
+    print(patients)
+    print(df_test)
+    if len(df_test.columns) != num_of_variables:
         print('error')
     with open(model_obj_path, "rb") as input_file:
         predictor = pickle.load(input_file)
-    prediction = predictor.predict(df_test.loc[:, df_test.columns != 'myclass'])
+    prediction = predictor.predict(df_test)
     print(prediction)
     print(df_test)

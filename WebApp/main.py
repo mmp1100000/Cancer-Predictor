@@ -11,6 +11,8 @@ from db_management import update_user_rol, get_user_rol, delete_by_id, new_model
 from login import user_validation, user_registration
 from predictor.train_workbench import evaluate_user_data
 
+from WebApp.data import generate_table_data_format
+
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 app.config['DATA_TEST_DIR'] = 'testdata/'
@@ -43,13 +45,11 @@ def main_page():
             'font-size: 160%" href="" > '
             'Predictor </a></li>')
         cancer_options, model_options = get_models_html_selector()
-
+        #requirements = generate_table_data_format(6)
         return render_template('index.html', navbar=anonymous_nav,
-                               signin=signin,
+                               signin=signin, #requirements=requirements,
                                cancer_options=Markup(cancer_options),
-                               model_options=Markup(model_options))
-        # ,
-        # model_options=Markup(model_options))  # Redirect to home, show signin link if not logged in.
+                               model_options=Markup(model_options)) # Redirect to home, show signin link if not logged in.
 
 
 @app.route('/predictor', methods=['GET', 'POST'])
@@ -60,7 +60,7 @@ def predict():
         model_type = request.form['model']
         filename = time.strftime("%Y-%m-%d_%H%M%S")+secure_filename(file.filename)
         file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
-        evaluate_user_data(filename,cancer_type,model_type)
+        evaluate_user_data(filename, cancer_type, model_type)
     return redirect('/')
 
 # ------ DOCTOR RECORDS -------
@@ -92,7 +92,7 @@ def admin_statistics_home():
 def admin_statistics(selected_content):
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
         return make_response(
-            render_template('ERROR.html'))  # Redirect to home, show logout link
+            render_template('ERROR.html'), error="Forbidden Access")  # Redirect to home, show logout link
     else:
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
          <span class="glyphicon glyphicon-user"></span>\

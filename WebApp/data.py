@@ -8,14 +8,17 @@ from db_management import get_user_rol, delete_by_id
 def hist_from_db():
     conn = Connection()
     y = conn.do_query_mult_col('SELECT datetime FROM prediction;')
-    x = list()
-    for i in range(0, len(y)):
-        x.append(y[i][0].day)
-
-    data = [go.Histogram(x=x)]
-    first_plot_url = py.plot(data, filename='./template/first_plot.html', auto_open=False)
-    with open(first_plot_url.replace("file://", "")) as plot_html_file:
-        return plot_html_file.read()
+    if y:
+        x = list()
+        for i in range(0, len(y)):
+            x.append(y[i][0].day)
+        print(x)
+        data = [go.Histogram(x=x)]
+        first_plot_url = py.plot(data, filename='./template/plot.html', auto_open=False)
+        with open(first_plot_url.replace("file://", "")) as plot_html_file:
+            return plot_html_file.read()
+    else:
+        return "<h1 style=\"position: fixed; top: 50%;left: 40%;\">Nothing to show</h1>"
 
 
 def generate_records_table(username):
@@ -155,6 +158,40 @@ def new_head(row):
         col_num += 1
     row_html += '</tr>'
     return row_html
+
+
+def generate_table_data_format(model_uid):
+    nvar = "Unknown"
+    conn = Connection()
+    json = conn.do_query('SELECT dataset_description FROM model WHERE id=\"' + str(model_uid) + '\";')
+    print(json)
+    if json is not None:
+        with open("../predictor/models/"+str(json[0]), 'r') as f:
+            datastore = json.load(f)
+        if datastore['num_of_variables']:
+            nvar = datastore['num_of_variables']
+    table = '<table style="border-collapse:collapse;border-spacing:0" ' \
+            'class="tg"><tr><td style="font-family:Arial, sans-serif;font-size:14px;padding:' \
+            '10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;' \
+            'border-color:black;background-color:#ecf4ff;text-align:center;vertical-align:top">' \
+            'Available file extensions</td><td style="font-family:Arial, sans-serif;font-size:' \
+            '14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-' \
+            'break:normal;border-color:black;text-align:center;vertical-align:top" colspan="2">' \
+            '.tsv and .arff</td></tr><tr><td style="font-family:Arial, sans-serif;font-size:14p' \
+            'x;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:' \
+            'normal;border-color:black;background-color:#ecf4ff;text-align:center" rowspan="2">' \
+            'Two lines per patient</td><td style="font-family:Arial, sans-serif;font-size:14px;' \
+            'padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:' \
+            'normal;border-color:black;text-align:center;vertical-align:top\" > Line 1 ' \
+            '</ td > < td style=\"font-family:Arial, sans-serif;font-size:14px;padding:10px ' \
+            '5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border' \
+            '-color:black;text-align:center;vertical-align:top\"></td></tr><tr><td style=\"' \
+            'font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:so' \
+            'lid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;' \
+            'text-align:center;vertical-align:top\">Line 2</td><td style=\"font-family:Arial,' \
+            ' sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;' \
+            'overflow:hidden;word-break:normal;border-color:black;text-align:center;vertical' \
+            '-align:top\">' + str(nvar) + '</td></tr></table>'
 
 
 if __name__ == '__main__':
