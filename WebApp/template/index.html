@@ -70,14 +70,14 @@
 </nav>
 
 <div class="card-body">
-  <form method="post" form class="needs-validation" action="/predictor" >
+  <form method="post" class="needs-validation" action="/predictor" enctype=multipart/form-data>
       <div class="form-row">
           <div class="input-group">
               <div class="input-group-prepend">
                   <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
               </div>
               <div class="custom-file">
-                  <input style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>
+                  <input style="size: auto" type="file" name="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>
                   <label class="custom-file-label" for="inputGroupFile01">Choose file containing gene expression levels (one row per patient)</label>
               </div>
           </div>
@@ -93,13 +93,13 @@
       </div>
       <div class="form-row">
           <div class="form-group col-md-3">
-              <select id="inputDisease" class="form-control">
+              <select id="inputDisease" name="disease" class="form-control" required>
                 <option selected>Choose the cancer type you need to predict</option>
 {{cancer_options}}
 </select>
           </div>
           <div class="form-group col-md-3">
-              <select disabled="disabled" class="subcat form-control" id="inputModel">
+              <select disabled="disabled" name="model" class="subcat form-control" id="inputModel" required>
                 <option selected>Choose the machine learning model you want to use</option>
 {{model_options}}
           </select>

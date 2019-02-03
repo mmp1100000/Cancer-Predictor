@@ -10,6 +10,7 @@ import pandas as pd
 import time
 
 from database.mysql_connector import Connection
+from db_management import get_model
 
 
 def process_dataset(filepath):
@@ -37,6 +38,7 @@ def new_model(x_train, y_train):
     model.fit(x_train, y_train,
               epochs=20,
               batch_size=128)
+
     return model
 
 
@@ -87,15 +89,39 @@ def save_model(model, model_info, x_test, y_test, model_type='nnet'):
 #     conn.connection.commit()
 
 
-train_filepath = '/Volumes/1TB HDD/Github projects/Cancer-Predictor/WebApp/predictor/data/leukemia_train.arff'
-test_filepath = '/Volumes/1TB HDD/Github projects/Cancer-Predictor/WebApp/predictor/data/leukemia_test.arff'
-dataset_train_processed = process_dataset(train_filepath)
-dataset_test_processed = process_dataset(test_filepath)
+# train_filepath = '/Volumes/1TB HDD/Github projects/Cancer-Predictor/WebApp/predictor/data/leukemia_train.arff'
+# test_filepath = '/Volumes/1TB HDD/Github projects/Cancer-Predictor/WebApp/predictor/data/leukemia_test.arff'
+# dataset_train_processed = process_dataset(train_filepath)
+# dataset_test_processed = process_dataset(test_filepath)
 
-model = new_model(dataset_train_processed['x'], dataset_train_processed['y'])
-save_model(model, {'description': 'model test.'}, dataset_test_processed['x'], dataset_test_processed['y'])
+# model = new_model(dataset_train_processed['x'], dataset_train_processed['y'])
+# save_model(model, {'description': 'model test.'}, dataset_test_processed['x'], dataset_test_processed['y'])
+
+
 # processed_data = process_dataset(train_filepath=train_filepath, test_filepath=test_filepath)
 
 # model = new_model(x_train=processed_data['x_train'], y_train=processed_data['y_train'])
 
 # save_model(model, 'Leukemia cancer predictor V1.', processed_data['x_test'], processed_data['y_test'])
+
+def evaluate_user_data(test_data_file_name, disease_name, model_name):
+    model_path = 'predictor/models/'
+    model_obj_path = model_path + get_model(disease_name, model_name)[0]
+    print(model_obj_path)
+    with open(model_obj_path + '-model_info.json') as data_file:
+        data_json = json.load(data_file)
+        num_of_variables = data_json['num_of_variables']
+
+    extension = test_data_file_name.split('.')[-1]
+    print(test_data_file_name)
+    print(extension)
+    if extension == 'arff':
+        data = arff.loadarff('testdata/' + test_data_file_name)
+    df_test = pd.DataFrame(data[0])
+    if len(df_test.columns)-1 != num_of_variables:
+        print('error')
+    with open(model_obj_path, "rb") as input_file:
+        predictor = pickle.load(input_file)
+    prediction = predictor.predict(df_test.loc[:, df_test.columns != 'myclass'])
+    print(prediction)
+    print(df_test)

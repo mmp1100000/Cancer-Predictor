@@ -72,3 +72,10 @@ def get_models_html_selector():
         model_options += '</optgroup>'
 
     return disease_options, model_options
+
+
+def get_model(disease, model_type):
+    conn = Connection()
+    cancers_models = conn.do_query_mult_col(
+        'SELECT model_path FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')
+    return cancers_models[0]

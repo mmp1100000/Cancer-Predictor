@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `mydb` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `mydb`;
 -- MySQL dump 10.13  Distrib 8.0.12, for macos10.13 (x86_64)
 --
 -- Host: localhost    Database: mydb
@@ -26,13 +28,13 @@ CREATE TABLE `model` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `train_date` datetime DEFAULT NULL,
   `acc` decimal(10,0) NOT NULL,
-  `model_type` varchar(45) DEFAULT NULL,
+  `model_type` varchar(45) NOT NULL,
   `dataset_description` varchar(500) DEFAULT NULL,
   `model_path` varchar(500) DEFAULT NULL,
-  `disease` varchar(100) DEFAULT NULL,
+  `disease` varchar(100) NOT NULL,
   `test_data_path` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +43,7 @@ CREATE TABLE `model` (
 
 LOCK TABLES `model` WRITE;
 /*!40000 ALTER TABLE `model` DISABLE KEYS */;
-INSERT INTO `model` VALUES (1,'0000-00-00 00:00:00',1,'test','test','models/modeltest',NULL,NULL),(6,'2019-01-15 12:42:29',0,'nnet','leukemia-2019-01-15 12:42-model_info.json','leukemia-2019-01-15 12:42',NULL,NULL),(7,'2019-01-15 12:42:43',1,'nnet','leukemia-2019-01-15 12:42:42-model_info.json','leukemia-2019-01-15 12:42:42',NULL,NULL);
+INSERT INTO `model` VALUES (11,'2019-01-22 14:22:51',1,'nnet','leukemia-2019-01-22_142251-model_info.json','leukemia-2019-01-22_142251','leukemia',NULL);
 /*!40000 ALTER TABLE `model` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -140,4 +142,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-01-22 13:41:59
+-- Dump completed on 2019-02-03 19:04:43
