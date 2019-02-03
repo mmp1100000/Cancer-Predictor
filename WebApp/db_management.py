@@ -16,17 +16,19 @@ def get_user_rol(email):
 
 
 def delete_by_id(table, uid):
-    print(uid)
     conn = Connection()
-    to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
-    print(to_delete)
-    if to_delete is not None:
-        conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
-        conn.connection.commit()
-        deleted = conn.do_query('SELECT * FROM ' + table + ';')
-        return True
-    else:
+    if table == "user" and len(conn.do_query('SELECT id FROM user WHERE rol=\"Admin\";')) == 1:
+        # Invalid to delete last admin
         return False
+    else:
+        to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+        if to_delete is not None:
+            conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+            conn.connection.commit()
+            deleted = conn.do_query('SELECT * FROM ' + table + ';')
+            return True
+        else:
+            return False
 
 
 def insert_new_user(username, email, password, rol):

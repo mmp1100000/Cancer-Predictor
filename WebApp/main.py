@@ -217,9 +217,8 @@ def register_page():
         firstname = request.form['firstname']
         lastname = request.form['lastname']
         email = request.form['email']
-        rol = request.form['rol']
         if user_registration(firstname, lastname, email, request.form['password'],
-                             rol):  # If user registered sucessfully
+                             request.form['repeated_password'], "Doctor"):  # If user registered sucessfully
             session['username'] = email  # Set user session
             if get_user_rol(session['username']) == "Doctor":
                 return redirect(url_for('main_page'))
@@ -227,8 +226,7 @@ def register_page():
                 return redirect('/administration/user')
         else:
             return make_response(
-                render_template('register.html', error='Registration error',
-                                rols=Markup('<option>Doctor</option><option>Admin</option>')))
+                render_template('register.html', error='Registration error'))
 
     return redirect(url_for('main_page'))
 
@@ -238,8 +236,7 @@ def register_submit():
     if 'username' in session:  # If user already logged in
         return redirect(url_for('main_page'))
     else:
-        return render_template('register.html',
-                               rols=Markup('<option>Doctor</option><option>Admin</option>'))  # Show login page
+        return render_template('register.html')  # Show login page
 
 
 @app.route('/logout')
