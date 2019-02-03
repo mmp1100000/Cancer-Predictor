@@ -7,4 +7,4 @@ def predict_leukemia(x, y):
         'rb')
     model = pickle.load(infile)
     infile.close()
-    return model.evaluate(x, y,batch_size=128)
+    return model.evaluate(x, y, batch_size=128)
