@@ -1,26 +1,23 @@
 import json
 import pickle
 import time
-
 import pandas as pd
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
 from scipy.io import arff
-import pandas as pd
-import time
 
 from database.mysql_connector import Connection
 from db_management import get_model
 
 
-def process_dataset(filepath):
+def process_dataset(filepath, class_name, class_val_0, class_val_1):
     data = arff.loadarff(filepath)
 
     df_train = pd.DataFrame(data[0])
-    x = df_train.loc[:, df_train.columns != 'myclass']
-    y = df_train['myclass']
-    y = y.replace(b'AML', 0)
-    y = y.replace(b'ALL', 1)
+    x = df_train.loc[:, df_train.columns != class_name]
+    y = df_train[class_name]
+    y = y.replace(class_val_0, 0)
+    y = y.replace(class_val_1, 1)
     return {'x': x, 'y': y}
 
 
@@ -47,22 +44,22 @@ def evaluate_model(model, x_test, y_test, batch_size=128):
     return score
 
 
-def save_model(model, model_info, x_test, y_test, model_type='nnet'):
-    conn = Connection('../database/mysql_connection_settings.json')
+def save_model(model, model_info, x_test, y_test, model_type, disease):
+    conn = Connection('database/mysql_connection_settings.json')
     model_name = 'leukemia-' + time.strftime("%Y-%m-%d_%H%M%S")
-    outfile = open('models/' + model_name, 'wb')
-    pickle.dump(model, outfile)
-    outfile.close()
+    model.save('predictor/models/' + model_name)
+    with open('predictor/models/' + model_name, 'rb') as f:
+        model = pickle.load(f)
     json_path = model_name + '-model_info.json'
-    with open('models/' + json_path, 'w') as f:
+    with open('predictor/models' + json_path, 'w') as f:
         json.dump(model_info, f)
     conn.do_query(
-        'INSERT INTO model(train_date, acc, model_type, dataset_description, model_path) values (\"' + time.strftime(
+        'INSERT INTO model(train_date, acc, model_type,disease, dataset_description, model_path) values (\"' + time.strftime(
             "%Y-%m-%d_%H:%M:%S") + '\",\"' + str(
             round(evaluate_model(model, x_test, y_test)[
-                      1], 3)) + '\",\"' + model_type + '\",\"' + json_path + '\",\"' + model_name + '\");')
+                      1],
+                  3)) + '\",\"' + model_type + '\",\"' + disease + '\",\"' + '\",\"' + json_path + '\",\"' + model_name + '\");')
     conn.connection.commit()
-
 
 # def save_model_upload(model, model_info, x_test, y_test, model_type='nnet'):
 #    UPLOAD_FOLDER = '/path/to/the/uploads'
@@ -75,7 +72,7 @@ def save_model(model, model_info, x_test, y_test, model_type='nnet'):
 #         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)
 #     conn = Connection('../database/mysql_connection_settings.json')
 #     model_name = 'leukemia-' + time.strftime("%Y-%m-%d_%H:%M:%S")
-#     outfile = open('models/' + model_name + '.pkl', 'wb')
+#     outfile = open('models/' + model_name + 'leukemia-2019-01-22_142251.pkl', 'wb')
 #     pickle.dump(model, outfile)
 #     outfile.close()
 #     json_path = model_name + '-model_info.json'

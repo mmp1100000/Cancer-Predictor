@@ -16,7 +16,7 @@ from WebApp.data import generate_table_data_format
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 app.config['DATA_TEST_DIR'] = 'testdata/'
-
+app.config['MODEL_DATA_TEST_DIR'] = 'modeltestdata/'
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
 @app.route("/")  # predictor
@@ -190,7 +190,9 @@ def admin_insert(selected_table):
             dataset_description = request.files['dataset_description']
             model_path = request.files['model_path']
             test_data_path = request.files['test_data_path']
-            new_model(disease, model_type, dataset_description, model_path, test_data_path)
+            filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(test_data_path.filename)
+            test_data_path.save(os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
+            new_model(disease, model_type, dataset_description, model_path, os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
             return redirect('/administration/model')
     return make_response(
         render_template('ERROR.html', error="Forbidden access"))

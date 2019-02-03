@@ -71,9 +71,12 @@ def insert_row_model(num_cols, index_id, insert_row, cols):
             file_description = {'dataset_description': 'Json file',
                                 'model_path': 'Python pkl file',
                                 'test_data_path': 'csv or arff file format'}
+            file_type = {'dataset_description': 'accept=".json,.JSON"',
+                                'model_path': 'accept="leukemia-2019-01-22_142251.pkl,.PKL"',
+                                'test_data_path': 'accept=".csv,.CSV,.tsv,.TSV,.arff,.ARFF"'}
             insert_row.append('<div class="input-group">\
                 <div class="custom-file">\
-                    <input name=\"' + cols[i - 1] + '\" style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>\
+                    <input name=\"' + cols[i - 1] + '\" '+file_type[cols[i - 1]]+' style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>\
                     <label class="custom-file-label" for="inputGroupFile01">' + file_description[cols[i - 1]] + '</label>\
                 </div>\
             </div>')

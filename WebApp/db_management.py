@@ -1,6 +1,8 @@
 import hashlib
+import json
 
 from database.mysql_connector import Connection
+from predictor.train_workbench import process_dataset, save_model
 
 
 def update_user_rol(uid, new_rol):
@@ -41,11 +43,13 @@ def insert_new_user(username, email, password, rol):
 
 
 def new_model(disease, model_type, dataset_description, model_path, test_data_path):
-    # test_data = process_dataset(test_data_path)
-    print(type(dataset_description))
-    print(type(model_path))
-    print(type(test_data_path))
-    # save_model(model_path, dataset_description, test_data['x'], test_data['y'], model_type)
+    description = json.loads(dataset_description.read().decode('utf8').replace("'", '"'))
+    print(description["class_info"]["name"])
+    test_data = process_dataset(test_data_path,
+                                description["class_info"]["name"],
+                                description["class_info"]["values"][0],
+                                description["class_info"]["values"][1])
+    save_model(model_path, description, test_data['x'], test_data['y'], model_type,disease)
 
 
 def get_cancers_models():
