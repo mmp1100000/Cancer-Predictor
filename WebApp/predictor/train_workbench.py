@@ -114,11 +114,21 @@ def evaluate_user_data(test_data_file_name, disease_name, model_name):
     print(extension)
     if extension == 'arff':
         data = arff.loadarff('testdata/' + test_data_file_name)
-    df_test = pd.DataFrame(data[0])
-    if len(df_test.columns)-1 != num_of_variables:
+        df_test = pd.DataFrame(data[0])
+    elif extension == 'tsv':
+        df_test = pd.DataFrame()
+        patient = list()
+        with open('testdata/' + test_data_file_name, "r") as f:
+            for line in f.readline():
+                patient.append(line)
+                df_test.append(f.readline())
+        print(patient)
+        print(df_test)
+
+    if len(df_test.columns) != num_of_variables:
         print('error')
     with open(model_obj_path, "rb") as input_file:
         predictor = pickle.load(input_file)
-    prediction = predictor.predict(df_test.loc[:, df_test.columns != 'myclass'])
+    prediction = predictor.predict(df_test)
     print(prediction)
     print(df_test)
