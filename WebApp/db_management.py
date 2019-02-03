@@ -44,3 +44,21 @@ def new_model(disease, model_type, dataset_description, model_path, test_data_pa
     print(type(model_path))
     print(type(test_data_path))
     # save_model(model_path, dataset_description, test_data['x'], test_data['y'], model_type)
+
+
+def get_cancers_models():
+    conn = Connection()
+    cancers_models = conn.do_query_mult_col('SELECT disease, model_type FROM model;')
+    if cancers_models is None:
+        return ["No option available", "No option available"]
+    else:
+        # cancers = list()
+        # models = list()
+        # for row in cancers_models:
+        #     cancers.append(row[0])
+        #     models.append(row[1])
+        # return [set(cancers), set(models)]
+        res = list()
+        for row in cancers_models:
+            res.append(row[0] + " - " + row[1])
+        return res
