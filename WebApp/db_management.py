@@ -2,7 +2,7 @@ import hashlib
 import json
 
 from database.mysql_connector import Connection
-from predictor.train_workbench import process_dataset, save_model
+
 
 
 def update_user_rol(uid, new_rol):
@@ -43,8 +43,8 @@ def insert_new_user(username, email, password, rol):
 
 
 def new_model(disease, model_type, dataset_description, model_path, test_data_path):
+    from predictor.train_workbench import process_dataset, save_model
     description = json.loads(dataset_description.read().decode('utf8').replace("'", '"'))
-    print(description["class_info"]["name"])
     test_data = process_dataset(test_data_path,
                                 description["class_info"]["name"],
                                 description["class_info"]["values"][0],
@@ -78,7 +78,7 @@ def get_models_html_selector():
     return disease_options, model_options
 
 
-def get_model(disease, model_type):
+def get_model_path(disease, model_type):
     conn = Connection()
     cancers_models = conn.do_query_mult_col(
         'SELECT model_path FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')

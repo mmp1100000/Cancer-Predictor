@@ -6,7 +6,7 @@ from flask import Markup
 from werkzeug.utils import secure_filename
 
 from data import generate_records_table, generate_table_from_db, hist_from_db
-from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, get_cancers_models, insert_new_user, \
+from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, insert_new_user, \
     get_models_html_selector
 from login import user_validation, user_registration
 from predictor.train_workbench import evaluate_user_data
