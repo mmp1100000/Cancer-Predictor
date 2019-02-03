@@ -2,10 +2,9 @@ from flask import Flask, escape, request, render_template, make_response, redire
 from flask import Markup
 
 from data import generate_records_table, generate_table_from_db, hist_from_db
-from db_management import update_user_rol, get_user_rol, delete_by_id, new_model
+from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, get_cancers_models, insert_new_user, \
+    get_models_html_selector
 from login import user_validation, user_registration
-
-from WebApp.db_management import insert_new_user, get_cancers_models
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
@@ -37,19 +36,14 @@ def main_page():
             '<li class="nav-item active"><a class ="nav-link text-warning active"  style="font-weight: bold; '
             'font-size: 160%" href="" > '
             'Predictor </a></li>')
-        cancers_models = get_cancers_models()
-        cancer_options = ""
-        model_options = ""
-        for cancer in cancers_models:
-            option = "<option>" + cancer + "</option>"
-            cancer_options += option
-        # for model in cancers_models[1]:
-        #     option = "<option>" + model + "</option>"
-        #     model_options += option
+        cancer_options, model_options = get_models_html_selector()
+
         return render_template('index.html', navbar=anonymous_nav,
-                               signin=signin, cancer_options=Markup(cancer_options))
-                               #,
-                               #model_options=Markup(model_options))  # Redirect to home, show signin link if not logged in.
+                               signin=signin,
+                               cancer_options=Markup(cancer_options),
+                               model_options=Markup(model_options))
+        # ,
+        # model_options=Markup(model_options))  # Redirect to home, show signin link if not logged in.
 
 
 @app.route('/predictor')
