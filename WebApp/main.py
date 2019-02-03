@@ -1,15 +1,21 @@
+import os
+import time
+
 from flask import Flask, escape, request, render_template, make_response, redirect, session, url_for
 from flask import Markup
+from werkzeug.utils import secure_filename
 
 from data import generate_records_table, generate_table_from_db, hist_from_db
 from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, get_cancers_models, insert_new_user, \
     get_models_html_selector
 from login import user_validation, user_registration
+from predictor.train_workbench import evaluate_user_data
 
 from WebApp.data import generate_table_data_format
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
+app.config['DATA_TEST_DIR'] = 'testdata/'
 
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
@@ -46,10 +52,16 @@ def main_page():
                                model_options=Markup(model_options)) # Redirect to home, show signin link if not logged in.
 
 
-@app.route('/predictor')
+@app.route('/predictor', methods=['GET', 'POST'])
 def predict():
-    pass
-
+    if request.method == 'POST':
+        file = request.files['file']
+        cancer_type = request.form['disease']
+        model_type = request.form['model']
+        filename = time.strftime("%Y-%m-%d_%H%M%S")+secure_filename(file.filename)
+        file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
+        evaluate_user_data(filename,cancer_type,model_type)
+    return redirect('/')
 
 # ------ DOCTOR RECORDS -------
 @app.route("/records")
