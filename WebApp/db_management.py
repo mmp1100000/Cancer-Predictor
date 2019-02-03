@@ -50,15 +50,23 @@ def get_cancers_models():
     conn = Connection()
     cancers_models = conn.do_query_mult_col('SELECT disease, model_type FROM model;')
     if cancers_models is None:
-        return ["No option available", "No option available"]
+        return dict()
     else:
-        # cancers = list()
-        # models = list()
-        # for row in cancers_models:
-        #     cancers.append(row[0])
-        #     models.append(row[1])
-        # return [set(cancers), set(models)]
-        res = list()
+        models_dict = dict()
         for row in cancers_models:
-            res.append(row[0] + " - " + row[1])
-        return res
+            models_dict.setdefault(row[0], []).append(row[1])
+        return models_dict
+
+
+def get_models_html_selector():
+    models = get_cancers_models()
+    disease_options = ""
+    model_options = ""
+    for disease in models.keys():
+        disease_options += '<option value="' + disease + '">' + disease + '</option>\n'
+        model_options += '<optgroup data-rel="' + disease + '">\n'
+        for model in models[disease]:
+            model_options += '<option value="' + model + '">' + model + '</option>\n'
+        model_options += '</optgroup>'
+
+    return disease_options, model_options
