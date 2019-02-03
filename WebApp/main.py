@@ -60,7 +60,7 @@ def predict():
         model_type = request.form['model']
         filename = time.strftime("%Y-%m-%d_%H%M%S")+secure_filename(file.filename)
         file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
-        evaluate_user_data(filename,cancer_type,model_type)
+        evaluate_user_data(filename, cancer_type, model_type)
     return redirect('/')
 
 # ------ DOCTOR RECORDS -------
