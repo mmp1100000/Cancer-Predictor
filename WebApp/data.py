@@ -24,7 +24,7 @@ def hist_from_db():
 def generate_records_table(username):
     rol = get_user_rol(username)
     if rol == "Doctor":
-        cols = ('PATIENT ID', 'DATE', 'DATA', 'MODEL', 'OUTPUT')
+        cols = ('PATIENT ID', 'DATE', 'DATA', 'MODEL DISEASE', 'MODEL TYPE', 'OUTPUT')
         body = '<table class="table" id="table">\
                                               <thead>'
         body += new_head(cols)
@@ -32,12 +32,12 @@ def generate_records_table(username):
                                     <tbody>'
         conn = Connection()
         prediction = conn.do_query_mult_col(
-            'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, PRE.result, PRE.model_id FROM prediction PRE, user U WHERE U.email=\"' + username + '\" and U.id=PRE.user_id;')
+            'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, M.disease, M.model_type, PRE.result FROM prediction PRE, user U, model M WHERE U.email=\"' + username + '\" and U.id=PRE.user_id and PRE.model_id=M.id;')
         if prediction is not None:  # There are data to show
             for row in prediction:
                 body += new_row(row)
         body += '  </tbody>\
-                    </table>'
+                    </table> <br> <br> <br>'
         return body
     elif rol == "Admin":
         cols = ('PREDICTION ID', 'USER ID', 'DATE', 'MODEL')
