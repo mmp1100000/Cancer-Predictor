@@ -91,4 +91,21 @@ def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model
     if user_requesting is not None:
         for index, row in prediction.iterrows():
             insert_prediction(time.strftime('%Y-%m-%d %H:%M:%S'), test_data_file_name, str(row[0]), disease_name, model_name, str(index), user_requesting)
-    return prediction.to_html()
+    table = prediction.to_html()
+    return modify_result_table(table)
+
+
+def modify_result_table(table):
+    res = "<div class = \"container\" style=\"margin-left: auto;margin-right: auto;\"> <table class=\"table " \
+          "table-hover\"" + table
+    res = res.split("<tr style=\"text-align: right;\">", 1)[0] + "<tr class=\"bg-info\" style=\"text-align: center;\">" + res.split("<tr style=\"text-align: right;\">", 1)[1]
+    res = res.split("""<th></th>""", 1)[0] + "<th>PATIENT ID</th>" + res.split("""<th></th>""", 1)[1]
+    res = res.split("""<tr>
+      <th>0</th>
+      <th></th>
+    </tr>""")[0] + res.split("""<tr>
+      <th>0</th>
+      <th></th>
+    </tr>""")[1]
+    res += "<br> <br> <br> </div>"
+    return res
