@@ -98,8 +98,11 @@ def get_patient_from_db(id_patient):
         return uid
 
 
-def insert_prediction(date, expression_file_path, result, model_id, patient_id, user_id):
+def insert_prediction(date, expression_file_path, result, disease_name, model_name, patient_id, user_email):
     conn = Connection()
+    model_id = conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')
+    patient_id = get_patient_from_db(patient_id)
+    user_id = conn.do_query('SELECT id from user WHERE email="' + user_email + '";')
     conn.do_query(
         'INSERT INTO prediction(datetime, expression_file_path, result, model_id, patient_id, user_id)) VALUES (\'' + date + '\',\'' + expression_file_path + '\',\'' + result + '\',\'' + model_id + '\',\'' + patient_id + + '\',\'' + user_id + '\');')
     conn.connection.commit()

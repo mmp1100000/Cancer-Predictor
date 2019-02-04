@@ -46,7 +46,6 @@ def main_page():
             'font-size: 160%" href="" > '
             'Predictor </a></li>')
         cancer_options, model_options = get_models_html_selector()
-        #requirements = generate_table_data_format(6)
         return render_template('index.html', navbar=anonymous_nav,
                                signin=signin, #requirements=requirements,
                                cancer_options=Markup(cancer_options),
@@ -61,7 +60,7 @@ def predict():
         model_type = request.form['model']
         filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(file.filename)
         file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
-        evaluate_user_data(filename, cancer_type, model_type)
+        evaluate_user_data(session['username'], filename, cancer_type, model_type)
     return redirect('/')
 
 
