@@ -11,17 +11,17 @@ from db_management import update_user_rol, get_user_rol, delete_by_id, new_model
 from login import user_validation, user_registration
 from predictor.train_workbench import evaluate_user_data
 
-from WebApp.data import generate_table_data_format
-
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 app.config['DATA_TEST_DIR'] = 'testdata/'
 app.config['MODEL_DATA_TEST_DIR'] = 'modeltestdata/'
 
+predict_data=""
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
 @app.route("/")  # predictor
 def main_page():
+    cancer_options, model_options = get_models_html_selector()
     if 'username' in session:  # If user already logged in
 
         if get_user_rol(session['username']) == 'Admin':
@@ -36,7 +36,10 @@ def main_page():
             'Predictor </a></li><li class="nav-item"> <a class ="nav-link text-warning" style="font-size: '
             '160%" href="/records" > Records </a></li>')
         return make_response(
-            render_template('index.html', navbar=nav, signin=logout))  # Redirect to home, show logout link
+            render_template('index.html', navbar=nav, signin=logout,
+                            cancer_options=Markup(cancer_options),
+                               model_options=Markup(model_options),
+                            results=Markup(predict_data)))  # Redirect to home, show logout link
     else:
         signin = Markup(' <a class="nav-link text-warning" href="/login"  style="font-size: 160%">\
                   <span class="glyphicon glyphicon-user"></span>\
@@ -45,23 +48,25 @@ def main_page():
             '<li class="nav-item active"><a class ="nav-link text-warning active"  style="font-weight: bold; '
             'font-size: 160%" href="" > '
             'Predictor </a></li>')
-        cancer_options, model_options = get_models_html_selector()
+
         #requirements = generate_table_data_format(6)
         return render_template('index.html', navbar=anonymous_nav,
                                signin=signin, #requirements=requirements,
                                cancer_options=Markup(cancer_options),
-                               model_options=Markup(model_options)) # Redirect to home, show signin link if not logged in.
+                               model_options=Markup(model_options),
+                               results=Markup(predict_data)) # Redirect to home, show signin link if not logged in.
 
 
 @app.route('/predictor', methods=['GET', 'POST'])
 def predict():
+    global predict_data
     if request.method == 'POST':
         file = request.files['file']
         cancer_type = request.form['disease']
         model_type = request.form['model']
         filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(file.filename)
         file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
-        evaluate_user_data(filename, cancer_type, model_type)
+        predict_data=evaluate_user_data(filename, cancer_type, model_type)
     return redirect('/')
 
 
