@@ -1,1 +1,1 @@
-{"description": "model test.", "class_info": {"name": "myclass", "values": ["AML", "ALL"]}, "num_of_variables": 7129}
+{"description": "Predict the subtype of akute leukemia", "class_info": {"name": "myclass", "values": ["AML", "ALL"]}, "num_of_variables": 7129}
