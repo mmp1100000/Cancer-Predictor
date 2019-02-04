@@ -91,7 +91,7 @@ def generate_table_from_db(table_name):
     table = conn.do_query_mult_col(
         'SELECT * FROM ' + table_name + ';')
     if cols is not None:
-        body = '<form class="needs-validation" id="form_funciona" method="post" action="/administration/' + table_name + '/insert" enctype=multipart/form-data>'
+        body = '<form class="needs-validation" id="form_funciona" name="user_form" method="post" action="/administration/' + table_name + '/insert" enctype=multipart/form-data>'
         body += '<table class="table" id="table">\
                               <thead>'
         cols.append(' ')  # For delete column

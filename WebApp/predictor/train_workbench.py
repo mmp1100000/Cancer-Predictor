@@ -1,4 +1,3 @@
-import datetime
 import json
 import pickle
 import time
@@ -90,9 +89,10 @@ def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model
     prediction = pd.DataFrame(data=prediction, index=df_test.index, columns=['PREDICTION'])
     if user_requesting is not None:
         for index, row in prediction.iterrows():
-            insert_prediction(time.strftime('%Y-%m-%d %H:%M:%S'), test_data_file_name, str(row[0]), disease_name, model_name, str(index), user_requesting)
-    table = prediction.to_html()
-    return modify_result_table(table)
+            insert_prediction(time.strftime('%Y-%m-%d %H:%M:%S'), test_data_file_name, str(row[0]), disease_name,
+                              model_name, str(index), user_requesting)
+    print(prediction.to_html())
+    return prediction.to_html()
 
 
 def modify_result_table(table):

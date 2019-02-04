@@ -16,7 +16,8 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
 app.config['DATA_TEST_DIR'] = 'testdata/'
 app.config['MODEL_DATA_TEST_DIR'] = 'modeltestdata/'
 
-predict_data=""
+predict_data = ""
+
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
 @app.route("/")  # predictor
@@ -38,7 +39,7 @@ def main_page():
         return make_response(
             render_template('index.html', navbar=nav, signin=logout,
                             cancer_options=Markup(cancer_options),
-                               model_options=Markup(model_options),
+                            model_options=Markup(model_options),
                             results=Markup(predict_data)))  # Redirect to home, show logout link
     else:
         signin = Markup(' <a class="nav-link text-warning" href="/login"  style="font-size: 160%">\
@@ -49,18 +50,19 @@ def main_page():
             'font-size: 160%" href="" > '
             'Predictor </a></li>')
 
-        #requirements = generate_table_data_format(6)
+        # requirements = generate_table_data_format(6)
         cancer_options, model_options = get_models_html_selector()
         return render_template('index.html', navbar=anonymous_nav,
-                               signin=signin, #requirements=requirements,
+                               signin=signin,  # requirements=requirements,
                                cancer_options=Markup(cancer_options),
                                model_options=Markup(model_options),
-                               results=Markup(predict_data)) # Redirect to home, show signin link if not logged in.
+                               results=Markup(predict_data))  # Redirect to home, show signin link if not logged in.
 
 
 @app.route('/predictor', methods=['GET', 'POST'])
 def predict():
     global predict_data
+    predict_data = ""
     if request.method == 'POST':
         file = request.files['file']
         cancer_type = request.form['disease']
@@ -166,6 +168,9 @@ def update_user():
     if get_user_rol(session['username']) == 'Admin':
         uid = request.form['uid']
         rol = request.form['rol']
+        print('RECIEVED UID AND ROL:')
+        print(uid)
+        print(rol)
         update_user_rol(uid, rol)
         return redirect('/')
     return make_response(
