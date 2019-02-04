@@ -226,13 +226,24 @@ def admin_insert(selected_table):
 # ------ USER MANAGEMENT -------
 @app.route('/login')
 def login_page():
+    global predict_data
+    predict_data = ""
     if 'username' in session:  # If user already logged in
         return redirect(url_for('main_page'))
     return render_template('login.html')  # Show login page
 
 
+@app.route('/clear_pred')
+def clear_pred():
+    global predict_data
+    predict_data = ""
+    return redirect('/')
+
+
 @app.route('/login-auth', methods=['GET', 'POST'])
 def login():
+    global predict_data
+    predict_data = ""
     if request.method == 'POST':
         user = request.form['user']
         password = request.form['password']
@@ -280,6 +291,8 @@ def register_submit():
 
 @app.route('/logout')
 def logout():
+    global predict_data
+    predict_data = ""
     # remove the username from the session if it's there
     session.pop('username', None)
     return redirect(url_for('main_page'))

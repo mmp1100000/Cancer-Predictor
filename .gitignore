@@ -12,3 +12,5 @@ WebApp/database/__pycache__/
 WebApp/predictor/__pycache__/
 
 WebApp/predictor/data/false_patient_id\.py
+
+WebApp/testdata/

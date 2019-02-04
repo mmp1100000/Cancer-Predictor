@@ -6,7 +6,7 @@ import pandas as pd
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
 from scipy.io import arff
-
+from keras import backend as K
 from database.mysql_connector import Connection
 from db_management import get_model_path, insert_prediction
 
@@ -22,9 +22,9 @@ def process_dataset(filepath, class_name, class_val_0, class_val_1):
     return {'x': x, 'y': y}
 
 
-def new_model(x_train, y_train):
+def new_model(x_train, y_train, input_dim):
     model = Sequential()
-    model.add(Dense(64, input_dim=7129, activation='relu'))
+    model.add(Dense(64, input_dim=input_dim, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.5))
@@ -46,6 +46,7 @@ def evaluate_model(model, x_test, y_test, batch_size=128):
 
 
 def save_model(model, model_info, x_test, y_test, model_type, disease):
+    K.clear_session()
     conn = Connection('database/mysql_connection_settings.json')
     model_name = disease + time.strftime("%Y-%m-%d_%H%M%S")
     model.save('predictor/models/' + model_name)
@@ -64,6 +65,7 @@ def save_model(model, model_info, x_test, y_test, model_type, disease):
 
 
 def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model_name):
+    K.clear_session()
     model_path = 'predictor/models/'
     model_obj_path = model_path + get_model_path(disease_name, model_name)[0]
     print(model_obj_path)
@@ -84,15 +86,17 @@ def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model
     if len(df_test.columns) != num_of_variables:
         print('error')
     with open(model_obj_path, "rb") as input_file:
+        print(model_obj_path)
         predictor = pickle.load(input_file)
     prediction = predictor.predict(df_test)
+
     prediction = pd.DataFrame(data=prediction, index=df_test.index, columns=['PREDICTION'])
     if user_requesting is not None:
         for index, row in prediction.iterrows():
             insert_prediction(time.strftime('%Y-%m-%d %H:%M:%S'), test_data_file_name, str(row[0]), disease_name,
                               model_name, str(index), user_requesting)
-    print(prediction.to_html())
-    return prediction.to_html()
+
+    return modify_result_table(prediction.to_html())
 
 
 def modify_result_table(table):

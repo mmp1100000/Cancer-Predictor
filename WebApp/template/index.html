@@ -122,15 +122,18 @@
                 {{model_options}}
           </select>
           </div>
-          <div id="model_descr">
+          <div class="form-group col-md-auto">
+              <button type="submit" class="btn btn-info" onclick="document.getElementById(\"loading\").style.display = \"block\";">Predict!</button>
 
           </div>
-          <div class="form-group col-md-auto">
-              <button type="submit" class="btn btn-info" onclick="('#loading').style.display = "block">Predict!</button>
+          <div id="model_descr">
+
           </div>
 
       </div>
   </form>
+
+  <button onclick="location.href='/clear_pred'" class="btn btn-info">Clear</button>
 
 </div>
 
