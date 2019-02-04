@@ -37,7 +37,7 @@ def generate_records_table(username):
             for row in prediction:
                 body += new_row(row)
         body += '  </tbody>\
-                    </table>'
+                    </table> <br> <br> <br>'
         return body
     elif rol == "Admin":
         cols = ('PREDICTION ID', 'USER ID', 'DATE', 'MODEL')
