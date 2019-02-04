@@ -2,16 +2,14 @@ import datetime
 import json
 import pickle
 import time
+
 import pandas as pd
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
 from scipy.io import arff
 
 from database.mysql_connector import Connection
-from db_management import get_model_path
-import csv
-
-from WebApp.db_management import insert_prediction
+from db_management import get_model_path, insert_prediction
 
 
 def process_dataset(filepath, class_name, class_val_0, class_val_1):
@@ -89,8 +87,8 @@ def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model
     with open(model_obj_path, "rb") as input_file:
         predictor = pickle.load(input_file)
     prediction = predictor.predict(df_test)
-    for pat, pred in patients, prediction:
-        insert_prediction(datetime.datetime.now(), test_data_file_name, pred, disease_name, model_name, pat, user_requesting)
     prediction = pd.DataFrame(data=prediction, index=df_test.index, columns=['PREDICTION'])
-    print(prediction)
+    if user_requesting is not None:
+        for index, row in prediction.iterrows():
+            insert_prediction(time.strftime('%Y-%m-%d %H:%M:%S'), test_data_file_name, str(row[0]), disease_name, model_name, str(index), user_requesting)
     return prediction.to_html()

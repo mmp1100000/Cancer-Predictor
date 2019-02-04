@@ -87,24 +87,24 @@ def get_model_path(disease, model_type):
 def get_patient_from_db(id_patient):
     conn = Connection()
     uid = conn.do_query('SELECT id FROM patient WHERE patient_id="' + id_patient + '";')
-    if uid is not None:
-        return uid
+    if uid:
+        return uid[0]
     else:
         conn.do_query(
-            'INSERT INTO patient(id_patient) VALUES (\'' + id_patient + '\');')
+            'INSERT INTO patient(patient_id) VALUES (\'' + id_patient + '\');')
         conn.connection.commit()
         uid = conn.do_query('SELECT id FROM patient WHERE patient_id="' + id_patient + '";')
         print(uid)
-        return uid
+        return uid[0]
 
 
 def insert_prediction(date, expression_file_path, result, disease_name, model_name, patient_id, user_email):
     conn = Connection()
-    model_id = conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')
+    model_id = conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')[0]
     patient_id = get_patient_from_db(patient_id)
-    user_id = conn.do_query('SELECT id from user WHERE email="' + user_email + '";')
+    user_id = conn.do_query('SELECT id from user WHERE email="' + user_email + '";')[0]
     conn.do_query(
-        'INSERT INTO prediction(datetime, expression_file_path, result, model_id, patient_id, user_id)) VALUES (\'' + date + '\',\'' + expression_file_path + '\',\'' + result + '\',\'' + model_id + '\',\'' + patient_id + + '\',\'' + user_id + '\');')
+        'INSERT INTO prediction(datetime, expression_file_path, result, model_id, patient_id, user_id) VALUES (\'' + date + '\',\'' + expression_file_path + '\',\'' + result + '\',\'' + str(model_id) + '\',\'' + str(patient_id) + '\',\'' + str(user_id) + '\');')
     conn.connection.commit()
 
 

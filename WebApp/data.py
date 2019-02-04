@@ -31,12 +31,11 @@ def generate_records_table(username):
         body += '</thead>  \
                                     <tbody>'
         conn = Connection()
-        if filter == 'all':
-            prediction = conn.do_query_mult_col(
-                'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, PRE.result, PRE.model_id FROM prediction PRE, user U WHERE U.email=\"' + username + '\" and U.id=PRE.user_id;')
-            if prediction is not None:  # There are data to show
-                for row in prediction:
-                    body += new_row(row)
+        prediction = conn.do_query_mult_col(
+            'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, PRE.result, PRE.model_id FROM prediction PRE, user U WHERE U.email=\"' + username + '\" and U.id=PRE.user_id;')
+        if prediction is not None:  # There are data to show
+            for row in prediction:
+                body += new_row(row)
         body += '  </tbody>\
                     </table>'
         return body

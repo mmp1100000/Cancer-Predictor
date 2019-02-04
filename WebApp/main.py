@@ -67,7 +67,10 @@ def predict():
         model_type = request.form['model']
         filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(file.filename)
         file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
-        evaluate_user_data(session['username'], filename, cancer_type, model_type)
+        if 'username' in session:
+            predict_data=evaluate_user_data(session['username'], filename, cancer_type, model_type)
+        else:
+            predict_data=evaluate_user_data(None, filename, cancer_type, model_type)
     return redirect('/')
 
 
