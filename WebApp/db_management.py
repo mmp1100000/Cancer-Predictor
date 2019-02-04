@@ -112,7 +112,7 @@ def get_json_values(disease, model_type):
     conn = Connection()
     json_file = conn.do_query_mult_col(
         'SELECT dataset_description FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')[0]
-
+    acc = get_model_acc(disease, model_type)
     with open('predictor/models/'+json_file[0]) as f:
         data = json.load(f)
         html= """<table class="table">
@@ -122,7 +122,7 @@ def get_json_values(disease, model_type):
       <td>"""+data['description']+"""</td>
     </tr>
     <tr>
-      <th scope="row">umber of variables</th>
+      <th scope="row">Number of variables</th>
       <td>"""+str(data['num_of_variables'])+"""</td>
     </tr>
     <tr>
@@ -133,6 +133,17 @@ def get_json_values(disease, model_type):
       <th scope="row">Class values</th>
       <td>"""+str(data['class_info']['values'])+"""</td>
     </tr>
+    <tr>
+      <th scope="row">Accuracy</th>
+      <td>"""+str(acc[0])+"""</td>
+    </tr>
   </tbody>
 </table>"""
     return html
+
+
+def get_model_acc(disease_name, model_name):
+    conn = Connection()
+    model_id = \
+    conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')[0]
+    return conn.do_query('SELECT acc from model where id="' + str(model_id) + '";')
