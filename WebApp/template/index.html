@@ -47,8 +47,26 @@
 
     });
   </script>
+  <script>
+   function submitForm() {
+     var ipd = document.preictor_selector.inputDisease;
+     var im = document.preictor_selector.inputModel;
+      var http = new XMLHttpRequest();
+      http.open("POST", "/get_model_info", true);
+      http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+      var params = "res=" + ipd.options[ipd.selectedIndex].value+";"+ im.options[im.selectedIndex].value; // probably use document.getElementById(...).value
+      http.send(params);
+      http.onload = function() {
+          document.getElementById('model_descr').innerHTML=http.responseText;
+      }
+  }
+  </script>
 </head>
 <body bgcolor="#ebdaff">
+  <div id="loading" style="display:none;">
+    <img id="loading-image"  src="../static/2.gif" data-placement="above" alt="Loading..." />
+  </div>
+
 <nav class="navbar navbar-expand-sm navbar-dark bg-info" style="box-shadow: 0px 2px 25px rgba(0, 0, 0, .25);">
   <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
       <ul class="navbar-nav mr-auto">
@@ -70,14 +88,14 @@
 </nav>
 
 <div class="card-body">
-  <form method="post" form class="needs-validation" action="/predictor" >
+  <form method="post" name="preictor_selector" class="needs-validation" action="/predictor" enctype=multipart/form-data>
       <div class="form-row">
           <div class="input-group">
               <div class="input-group-prepend">
                   <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
               </div>
               <div class="custom-file">
-                  <input style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>
+                  <input style="size: auto" type="file" name="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>
                   <label class="custom-file-label" for="inputGroupFile01">Choose file containing gene expression levels (one row per patient)</label>
               </div>
           </div>
@@ -93,24 +111,35 @@
       </div>
       <div class="form-row">
           <div class="form-group col-md-3">
-              <select id="inputDisease" class="form-control">
+              <select id="inputDisease" name="disease" class="form-control" required>
                 <option selected>Choose the cancer type you need to predict</option>
-{{cancer_options}}
-</select>
+                    {{cancer_options}}
+              </select>
           </div>
           <div class="form-group col-md-3">
-              <select disabled="disabled" class="subcat form-control" id="inputModel">
+              <select disabled="disabled" onchange="return submitForm()" name="model" class="subcat form-control" id="inputModel" required>
                 <option selected>Choose the machine learning model you want to use</option>
-{{model_options}}
+                {{model_options}}
           </select>
           </div>
           <div class="form-group col-md-auto">
-              <button type="submit" class="btn btn-info">Predict!</button>
+              <button type="submit" class="btn btn-info" onclick="document.getElementById(\"loading\").style.display = \"block\";">Predict!</button>
+
           </div>
+          <div id="model_descr">
+
+          </div>
+
       </div>
   </form>
+
+  <button onclick="location.href='/clear_pred'" class="btn btn-info">Clear</button>
+
 </div>
 
+<div class="card-body">
+    {{results}}
+</div>
 
 <div class="fixed-bottom">
   <img src="../static/foot.png" width="1500" height="80">

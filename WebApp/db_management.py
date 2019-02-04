@@ -1,4 +1,5 @@
 import hashlib
+import json
 
 from database.mysql_connector import Connection
 
@@ -16,17 +17,19 @@ def get_user_rol(email):
 
 
 def delete_by_id(table, uid):
-    print(uid)
     conn = Connection()
-    to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
-    print(to_delete)
-    if to_delete is not None:
-        conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
-        conn.connection.commit()
-        deleted = conn.do_query('SELECT * FROM ' + table + ';')
-        return True
-    else:
+    if table == "user" and len(conn.do_query('SELECT id FROM user WHERE rol=\"Admin\";')) == 1:
+        # Invalid to delete last admin
         return False
+    else:
+        to_delete = conn.do_query('SELECT * FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+        if to_delete is not None:
+            conn.do_query('DELETE FROM ' + table + ' WHERE id = \'' + str(uid) + '\';')
+            conn.connection.commit()
+            deleted = conn.do_query('SELECT * FROM ' + table + ';')
+            return True
+        else:
+            return False
 
 
 def insert_new_user(username, email, password, rol):
@@ -39,11 +42,13 @@ def insert_new_user(username, email, password, rol):
 
 
 def new_model(disease, model_type, dataset_description, model_path, test_data_path):
-    # test_data = process_dataset(test_data_path)
-    print(type(dataset_description))
-    print(type(model_path))
-    print(type(test_data_path))
-    # save_model(model_path, dataset_description, test_data['x'], test_data['y'], model_type)
+    from predictor.train_workbench import process_dataset, save_model
+    description = json.loads(dataset_description.read().decode('utf8').replace("'", '"'))
+    test_data = process_dataset(test_data_path,
+                                description["class_info"]["name"],
+                                description["class_info"]["values"][0],
+                                description["class_info"]["values"][1])
+    save_model(model_path, description, test_data['x'], test_data['y'], model_type, disease)
 
 
 def get_cancers_models():
@@ -70,3 +75,75 @@ def get_models_html_selector():
         model_options += '</optgroup>'
 
     return disease_options, model_options
+
+
+def get_model_path(disease, model_type):
+    conn = Connection()
+    cancers_models = conn.do_query_mult_col(
+        'SELECT model_path FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')
+    return cancers_models[0]
+
+
+def get_patient_from_db(id_patient):
+    conn = Connection()
+    uid = conn.do_query('SELECT id FROM patient WHERE patient_id="' + id_patient + '";')
+    if uid:
+        return uid[0]
+    else:
+        conn.do_query(
+            'INSERT INTO patient(patient_id) VALUES (\'' + id_patient + '\');')
+        conn.connection.commit()
+        uid = conn.do_query('SELECT id FROM patient WHERE patient_id="' + id_patient + '";')
+        print(uid)
+        return uid[0]
+
+
+def insert_prediction(date, expression_file_path, result, disease_name, model_name, patient_id, user_email):
+    conn = Connection()
+    model_id = conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')[0]
+    patient_id = get_patient_from_db(patient_id)
+    user_id = conn.do_query('SELECT id from user WHERE email="' + user_email + '";')[0]
+    conn.do_query(
+        'INSERT INTO prediction(datetime, expression_file_path, result, model_id, patient_id, user_id) VALUES (\'' + date + '\',\'' + expression_file_path + '\',\'' + result + '\',\'' + str(model_id) + '\',\'' + str(patient_id) + '\',\'' + str(user_id) + '\');')
+    conn.connection.commit()
+
+
+def get_json_values(disease, model_type):
+    conn = Connection()
+    json_file = conn.do_query_mult_col(
+        'SELECT dataset_description FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')[0]
+    acc = get_model_acc(disease, model_type)
+    with open('predictor/models/'+json_file[0]) as f:
+        data = json.load(f)
+        html= """<table class="table">
+  <tbody>
+    <tr>
+      <th scope="row">Description</th>
+      <td>"""+data['description']+"""</td>
+    </tr>
+    <tr>
+      <th scope="row">Number of variables</th>
+      <td>"""+str(data['num_of_variables'])+"""</td>
+    </tr>
+    <tr>
+      <th scope="row">Class name</th>
+      <td>"""+data['class_info']['name']+"""</td>
+    </tr>
+        <tr>
+      <th scope="row">Class values</th>
+      <td>"""+str(data['class_info']['values'])+"""</td>
+    </tr>
+    <tr>
+      <th scope="row">Accuracy</th>
+      <td>"""+str(acc[0])+"""</td>
+    </tr>
+  </tbody>
+</table>"""
+    return html
+
+
+def get_model_acc(disease_name, model_name):
+    conn = Connection()
+    model_id = \
+    conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')[0]
+    return conn.do_query('SELECT acc from model where id="' + str(model_id) + '";')

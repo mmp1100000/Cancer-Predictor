@@ -8,32 +8,34 @@ from db_management import get_user_rol, delete_by_id
 def hist_from_db():
     conn = Connection()
     y = conn.do_query_mult_col('SELECT datetime FROM prediction;')
-    x = list()
-    for i in range(0, len(y)):
-        x.append(y[i][0].day)
-
-    data = [go.Histogram(x=x)]
-    first_plot_url = py.plot(data, filename='./template/first_plot.html', auto_open=False)
-    with open(first_plot_url.replace("file://", "")) as plot_html_file:
-        return plot_html_file.read()
+    if y:
+        x = list()
+        for i in range(0, len(y)):
+            x.append(y[i][0].day)
+        print(x)
+        data = [go.Histogram(x=x)]
+        first_plot_url = py.plot(data, filename='./template/plot.html', auto_open=False)
+        with open(first_plot_url.replace("file://", "")) as plot_html_file:
+            return plot_html_file.read()
+    else:
+        return "<h1 style=\"position: fixed; top: 50%;left: 40%;\">Nothing to show</h1>"
 
 
 def generate_records_table(username):
     rol = get_user_rol(username)
     if rol == "Doctor":
-        cols = ('PATIENT ID', 'DATE', 'DATA', 'MODEL', 'OUTPUT')
+        cols = ('PATIENT ID', 'DATE', 'DATA', 'MODEL DISEASE', 'MODEL TYPE', 'OUTPUT')
         body = '<table class="table" id="table">\
                                               <thead>'
         body += new_head(cols)
         body += '</thead>  \
                                     <tbody>'
         conn = Connection()
-        if filter == 'all':
-            prediction = conn.do_query_mult_col(
-                'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, PRE.result, PRE.model_id FROM prediction PRE, user U WHERE U.email=\"' + username + '\" and U.id=PRE.user_id;')
-            if prediction is not None:  # There are data to show
-                for row in prediction:
-                    body += new_row(row)
+        prediction = conn.do_query_mult_col(
+            'SELECT PRE.patient_id, PRE.datetime, PRE.expression_file_path, M.disease, M.model_type, PRE.result FROM prediction PRE, user U, model M WHERE U.email=\"' + username + '\" and U.id=PRE.user_id and PRE.model_id=M.id;')
+        if prediction is not None:  # There are data to show
+            for row in prediction:
+                body += new_row(row)
         body += '  </tbody>\
                     </table>'
         return body
@@ -68,9 +70,12 @@ def insert_row_model(num_cols, index_id, insert_row, cols):
             file_description = {'dataset_description': 'Json file',
                                 'model_path': 'Python pkl file',
                                 'test_data_path': 'csv or arff file format'}
+            file_type = {'dataset_description': 'accept=".json,.JSON"',
+                                'model_path': 'accept="leukemia-2019-01-22_142251.pkl,.PKL"',
+                                'test_data_path': 'accept=".csv,.CSV,.tsv,.TSV,.arff,.ARFF"'}
             insert_row.append('<div class="input-group">\
                 <div class="custom-file">\
-                    <input name=\"' + cols[i - 1] + '\" style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>\
+                    <input name=\"' + cols[i - 1] + '\" '+file_type[cols[i - 1]]+' style="size: auto" type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" required>\
                     <label class="custom-file-label" for="inputGroupFile01">' + file_description[cols[i - 1]] + '</label>\
                 </div>\
             </div>')
@@ -86,7 +91,7 @@ def generate_table_from_db(table_name):
     table = conn.do_query_mult_col(
         'SELECT * FROM ' + table_name + ';')
     if cols is not None:
-        body = '<form class="needs-validation" id="form_funciona" method="post" action="/administration/' + table_name + '/insert" enctype=multipart/form-data>'
+        body = '<form class="needs-validation" id="form_funciona" name="user_form" method="post" action="/administration/' + table_name + '/insert" enctype=multipart/form-data>'
         body += '<table class="table" id="table">\
                               <thead>'
         cols.append(' ')  # For delete column
@@ -152,7 +157,6 @@ def new_head(row):
         col_num += 1
     row_html += '</tr>'
     return row_html
-
 
 if __name__ == '__main__':
     delete_by_id('user', 5)

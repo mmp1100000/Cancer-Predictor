@@ -1,0 +1,1 @@
+{"description": "Predict if a patient has colon cancer or not", "class_info": {"values": ["positive", "negative"], "name": "Class"}, "num_of_variables": 2000}

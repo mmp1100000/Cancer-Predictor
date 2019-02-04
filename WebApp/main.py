@@ -1,18 +1,28 @@
+import os
+import time
+
 from flask import Flask, escape, request, render_template, make_response, redirect, session, url_for
 from flask import Markup
+from werkzeug.utils import secure_filename
 
 from data import generate_records_table, generate_table_from_db, hist_from_db
-from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, get_cancers_models, insert_new_user, \
-    get_models_html_selector
+from db_management import update_user_rol, get_user_rol, delete_by_id, new_model, insert_new_user, \
+    get_models_html_selector, get_json_values
 from login import user_validation, user_registration
+from predictor.train_workbench import evaluate_user_data
 
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
+app.config['DATA_TEST_DIR'] = 'testdata/'
+app.config['MODEL_DATA_TEST_DIR'] = 'modeltestdata/'
+
+predict_data = ""
 
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
 @app.route("/")  # predictor
 def main_page():
+    cancer_options, model_options = get_models_html_selector()
     if 'username' in session:  # If user already logged in
 
         if get_user_rol(session['username']) == 'Admin':
@@ -27,7 +37,10 @@ def main_page():
             'Predictor </a></li><li class="nav-item"> <a class ="nav-link text-warning" style="font-size: '
             '160%" href="/records" > Records </a></li>')
         return make_response(
-            render_template('index.html', navbar=nav, signin=logout))  # Redirect to home, show logout link
+            render_template('index.html', navbar=nav, signin=logout,
+                            cancer_options=Markup(cancer_options),
+                            model_options=Markup(model_options),
+                            results=Markup(predict_data)))  # Redirect to home, show logout link
     else:
         signin = Markup(' <a class="nav-link text-warning" href="/login"  style="font-size: 160%">\
                   <span class="glyphicon glyphicon-user"></span>\
@@ -36,19 +49,31 @@ def main_page():
             '<li class="nav-item active"><a class ="nav-link text-warning active"  style="font-weight: bold; '
             'font-size: 160%" href="" > '
             'Predictor </a></li>')
+
+        # requirements = generate_table_data_format(6)
         cancer_options, model_options = get_models_html_selector()
-
         return render_template('index.html', navbar=anonymous_nav,
-                               signin=signin,
+                               signin=signin,  # requirements=requirements,
                                cancer_options=Markup(cancer_options),
-                               model_options=Markup(model_options))
-        # ,
-        # model_options=Markup(model_options))  # Redirect to home, show signin link if not logged in.
+                               model_options=Markup(model_options),
+                               results=Markup(predict_data))  # Redirect to home, show signin link if not logged in.
 
 
-@app.route('/predictor')
+@app.route('/predictor', methods=['GET', 'POST'])
 def predict():
-    pass
+    global predict_data
+    predict_data = ""
+    if request.method == 'POST':
+        file = request.files['file']
+        cancer_type = request.form['disease']
+        model_type = request.form['model']
+        filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(file.filename)
+        file.save(os.path.join(app.config['DATA_TEST_DIR'], filename))
+        if 'username' in session:
+            predict_data = evaluate_user_data(session['username'], filename, cancer_type, model_type)
+        else:
+            predict_data = evaluate_user_data(None, filename, cancer_type, model_type)
+    return redirect('/')
 
 
 # ------ DOCTOR RECORDS -------
@@ -80,7 +105,7 @@ def admin_statistics_home():
 def admin_statistics(selected_content):
     if 'username' not in session or get_user_rol(session['username']) != 'Admin':
         return make_response(
-            render_template('ERROR.html'))  # Redirect to home, show logout link
+            render_template('ERROR.html'), error="Forbidden Access")  # Redirect to home, show logout link
     else:
         logout = Markup('<p class="nav-link text-warning" style="font-size: 160%">' + str(escape(session['username'])) + '</p> <a class="nav-link text-warning" href="/logout"  style="font-size: 160%">\
          <span class="glyphicon glyphicon-user"></span>\
@@ -143,10 +168,21 @@ def update_user():
     if get_user_rol(session['username']) == 'Admin':
         uid = request.form['uid']
         rol = request.form['rol']
+        print('RECIEVED UID AND ROL:')
+        print(uid)
+        print(rol)
         update_user_rol(uid, rol)
         return redirect('/')
     return make_response(
         render_template('ERROR.html', error="Forbidden access"))
+
+
+@app.route("/get_model_info", methods=['POST'])
+def get_model_info():
+    res = request.form['res'].split(";")
+    print(res)
+    print(get_json_values(res[0], res[1]))
+    return Markup(get_json_values(res[0], res[1]))
 
 
 @app.route("/administration/<string:selected_table>/delete/<int:uid>", methods=['GET'])
@@ -178,7 +214,10 @@ def admin_insert(selected_table):
             dataset_description = request.files['dataset_description']
             model_path = request.files['model_path']
             test_data_path = request.files['test_data_path']
-            new_model(disease, model_type, dataset_description, model_path, test_data_path)
+            filename = time.strftime("%Y-%m-%d_%H%M%S") + secure_filename(test_data_path.filename)
+            test_data_path.save(os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
+            new_model(disease, model_type, dataset_description, model_path,
+                      os.path.join(app.config['MODEL_DATA_TEST_DIR'], filename))
             return redirect('/administration/model')
     return make_response(
         render_template('ERROR.html', error="Forbidden access"))
@@ -187,13 +226,24 @@ def admin_insert(selected_table):
 # ------ USER MANAGEMENT -------
 @app.route('/login')
 def login_page():
+    global predict_data
+    predict_data = ""
     if 'username' in session:  # If user already logged in
         return redirect(url_for('main_page'))
     return render_template('login.html')  # Show login page
 
 
+@app.route('/clear_pred')
+def clear_pred():
+    global predict_data
+    predict_data = ""
+    return redirect('/')
+
+
 @app.route('/login-auth', methods=['GET', 'POST'])
 def login():
+    global predict_data
+    predict_data = ""
     if request.method == 'POST':
         user = request.form['user']
         password = request.form['password']
@@ -217,9 +267,8 @@ def register_page():
         firstname = request.form['firstname']
         lastname = request.form['lastname']
         email = request.form['email']
-        rol = request.form['rol']
         if user_registration(firstname, lastname, email, request.form['password'],
-                             rol):  # If user registered sucessfully
+                             request.form['repeated_password'], "Doctor"):  # If user registered sucessfully
             session['username'] = email  # Set user session
             if get_user_rol(session['username']) == "Doctor":
                 return redirect(url_for('main_page'))
@@ -227,8 +276,7 @@ def register_page():
                 return redirect('/administration/user')
         else:
             return make_response(
-                render_template('register.html', error='Registration error',
-                                rols=Markup('<option>Doctor</option><option>Admin</option>')))
+                render_template('register.html', error='Registration error'))
 
     return redirect(url_for('main_page'))
 
@@ -238,12 +286,13 @@ def register_submit():
     if 'username' in session:  # If user already logged in
         return redirect(url_for('main_page'))
     else:
-        return render_template('register.html',
-                               rols=Markup('<option>Doctor</option><option>Admin</option>'))  # Show login page
+        return render_template('register.html')  # Show login page
 
 
 @app.route('/logout')
 def logout():
+    global predict_data
+    predict_data = ""
     # remove the username from the session if it's there
     session.pop('username', None)
     return redirect(url_for('main_page'))
