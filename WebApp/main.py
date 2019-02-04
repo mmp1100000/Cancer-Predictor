@@ -175,6 +175,8 @@ def update_user():
 @app.route("/get_model_info", methods=['POST'])
 def get_model_info():
     res = request.form['res'].split(";")
+    print(res)
+    print(get_json_values(res[0], res[1]))
     return Markup(get_json_values(res[0], res[1]))
 
 
