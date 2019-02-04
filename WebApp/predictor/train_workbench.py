@@ -1,3 +1,4 @@
+import datetime
 import json
 import pickle
 import time
@@ -9,6 +10,8 @@ from scipy.io import arff
 from database.mysql_connector import Connection
 from db_management import get_model_path
 import csv
+
+from WebApp.db_management import insert_prediction
 
 
 def process_dataset(filepath, class_name, class_val_0, class_val_1):
@@ -63,7 +66,7 @@ def save_model(model, model_info, x_test, y_test, model_type, disease):
     conn.connection.commit()
 
 
-def evaluate_user_data(test_data_file_name, disease_name, model_name):
+def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model_name):
     model_path = 'predictor/models/'
     model_obj_path = model_path + get_model_path(disease_name, model_name)[0]
     print(model_obj_path)
@@ -81,13 +84,13 @@ def evaluate_user_data(test_data_file_name, disease_name, model_name):
         data = pd.DataFrame.from_csv('testdata/' + test_data_file_name, sep='\t', header=None)
         df_test = data.loc[:, 1:len(data.keys()) - 1]
         patients = list(data.index)
-    print(patients)
-    print(df_test)
     if len(df_test.columns) != num_of_variables:
         print('error')
     with open(model_obj_path, "rb") as input_file:
         predictor = pickle.load(input_file)
     prediction = predictor.predict(df_test)
+    for pat, pred in patients, prediction:
+        insert_prediction(datetime.datetime.now(), test_data_file_name, pred, disease_name, model_name, pat, user_requesting)
     prediction = pd.DataFrame(data=prediction, index=df_test.index, columns=['PREDICTION'])
     print(prediction)
     return prediction.to_html()
