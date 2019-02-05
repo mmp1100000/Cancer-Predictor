@@ -11,16 +11,21 @@ from db_management import update_user_rol, get_user_rol, delete_by_id, new_model
 from login import user_validation, user_registration
 from predictor.train_workbench import evaluate_user_data
 
+"""
+Script to be executed to start the web app
+"""
+
 app = Flask(__name__, template_folder='template')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Needed for Flask Session management
-app.config['DATA_TEST_DIR'] = 'testdata/'
-app.config['MODEL_DATA_TEST_DIR'] = 'modeltestdata/'
+app.config['DATA_TEST_DIR'] = 'testdata/'  # Folder where test data uploaded by users will be saved
+app.config[
+    'MODEL_DATA_TEST_DIR'] = 'modeltestdata/'  # Folder where test data uploaded by administrators to cumpute test ACC will be saved
 
-predict_data = ""
+predict_data = ""  # No prediction data exists at start
 
 
 # ------ DOCTOR AND ANONYMOUS PREDICTOR -------
-@app.route("/")  # predictor
+@app.route("/")  # predictor main page (index.html)
 def main_page():
     cancer_options, model_options = get_models_html_selector()
     if 'username' in session:  # If user already logged in
@@ -59,7 +64,7 @@ def main_page():
                                results=Markup(predict_data))  # Redirect to home, show signin link if not logged in.
 
 
-@app.route('/predictor', methods=['GET', 'POST'])
+@app.route('/predictor', methods=['GET', 'POST'])  # Post new predictions
 def predict():
     global predict_data
     predict_data = ""
@@ -77,7 +82,7 @@ def predict():
 
 
 # ------ DOCTOR RECORDS -------
-@app.route("/records")
+@app.route("/records")  # View user records (only registered)
 def records_page():
     rol = get_user_rol(session['username'])
     if 'username' not in session or rol != 'Doctor':
@@ -93,7 +98,7 @@ def records_page():
 
 
 # ------ ADMIN -------
-@app.route("/statistics")
+@app.route("/statistics")  # View usage statistics (only administrators)
 def admin_statistics_home():
     if get_user_rol(session['username']) == 'Admin':
         return redirect('/statistics/tables')
@@ -163,7 +168,7 @@ def admin_administration(selected_table):
                             signin=logout))  # Redirect to admin, show logout link
 
 
-@app.route("/administration/user/edit", methods=['POST'])
+@app.route("/administration/user/edit", methods=['POST'])  # Post user new data (Administrator only)
 def update_user():
     if get_user_rol(session['username']) == 'Admin':
         uid = request.form['uid']
@@ -177,7 +182,7 @@ def update_user():
         render_template('ERROR.html', error="Forbidden access"))
 
 
-@app.route("/get_model_info", methods=['POST'])
+@app.route("/get_model_info", methods=['POST'])  # Get info from json model data
 def get_model_info():
     res = request.form['res'].split(";")
     print(res)
@@ -185,7 +190,8 @@ def get_model_info():
     return Markup(get_json_values(res[0], res[1]))
 
 
-@app.route("/administration/<string:selected_table>/delete/<int:uid>", methods=['GET'])
+@app.route("/administration/<string:selected_table>/delete/<int:uid>",
+           methods=['GET'])  # Delete user (Administrator only)
 def delete_user(selected_table, uid):
     if get_user_rol(session['username']) == 'Admin':
         if delete_by_id(selected_table, uid):
@@ -198,7 +204,7 @@ def delete_user(selected_table, uid):
         return make_response(render_template('ERROR.html', error="Forbidden access"))
 
 
-@app.route("/administration/<string:selected_table>/insert", methods=['POST'])
+@app.route("/administration/<string:selected_table>/insert", methods=['POST'])  # Insert user/model (Administrator only)
 def admin_insert(selected_table):
     if get_user_rol(session['username']) == 'Admin':
         if selected_table == 'user':
@@ -224,7 +230,7 @@ def admin_insert(selected_table):
 
 
 # ------ USER MANAGEMENT -------
-@app.route('/login')
+@app.route('/login')  # User login page
 def login_page():
     global predict_data
     predict_data = ""
@@ -233,7 +239,7 @@ def login_page():
     return render_template('login.html')  # Show login page
 
 
-@app.route('/clear_pred')
+@app.route('/clear_pred')  # Clears prediction generated table
 def clear_pred():
     global predict_data
     predict_data = ""
@@ -281,7 +287,7 @@ def register_page():
     return redirect(url_for('main_page'))
 
 
-@app.route('/register')
+@app.route('/register')  # Register main page
 def register_submit():
     if 'username' in session:  # If user already logged in
         return redirect(url_for('main_page'))

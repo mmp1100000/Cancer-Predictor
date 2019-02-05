@@ -1,7 +1,6 @@
 import json
 import pickle
 import time
-
 import pandas as pd
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
@@ -12,8 +11,15 @@ from db_management import get_model_path, insert_prediction
 
 
 def process_dataset(filepath, class_name, class_val_0, class_val_1):
+    """
+    Separates dependent from independent variables data and converts from factor to binary output.
+    :param filepath:
+    :param class_name:
+    :param class_val_0:
+    :param class_val_1:
+    :return: dependent variables data(x),independent variable data(y) in a dictionary.
+    """
     data = arff.loadarff(filepath)
-
     df_train = pd.DataFrame(data[0])
     x = df_train.loc[:, df_train.columns != class_name]
     y = df_train[class_name].str.decode("utf-8")
@@ -23,6 +29,13 @@ def process_dataset(filepath, class_name, class_val_0, class_val_1):
 
 
 def new_model(x_train, y_train, input_dim):
+    """
+    Creates Keras model.
+    :param x_train:
+    :param y_train:
+    :param input_dim:
+    :return: Keras model
+    """
     model = Sequential()
     model.add(Dense(64, input_dim=input_dim, activation='relu'))
     model.add(Dropout(0.5))
@@ -41,11 +54,28 @@ def new_model(x_train, y_train, input_dim):
 
 
 def evaluate_model(model, x_test, y_test, batch_size=128):
+    """
+    Evaluates given model with test data.
+    :param model:
+    :param x_test:
+    :param y_test:
+    :param batch_size:
+    :return: score (ACC)
+    """
     score = model.evaluate(x_test, y_test, batch_size)
     return score
 
 
 def save_model(model, model_info, x_test, y_test, model_type, disease):
+    """
+    Saves given model, json info and characteristics in DB.
+    :param model:
+    :param model_info:
+    :param x_test:
+    :param y_test:
+    :param model_type:
+    :param disease:
+    """
     K.clear_session()
     conn = Connection('database/mysql_connection_settings.json')
     model_name = disease + time.strftime("%Y-%m-%d_%H%M%S")
@@ -65,6 +95,14 @@ def save_model(model, model_info, x_test, y_test, model_type, disease):
 
 
 def evaluate_user_data(user_requesting, test_data_file_name, disease_name, model_name):
+    """
+    Evaluates dataset predictions and returns html table with patient ids and model output.
+    :param user_requesting:
+    :param test_data_file_name:
+    :param disease_name:
+    :param model_name:
+    :return: Model output
+    """
     K.clear_session()
     model_path = 'predictor/models/'
     model_obj_path = model_path + get_model_path(disease_name, model_name)[0]

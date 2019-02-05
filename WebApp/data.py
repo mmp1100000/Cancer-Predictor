@@ -4,6 +4,7 @@ import plotly.offline as py
 from database.mysql_connector import Connection
 from db_management import get_user_rol, delete_by_id
 
+"""This script contains several functions for representing user and model information in html tables."""
 
 def hist_from_db():
     conn = Connection()
