@@ -23,6 +23,16 @@ def user_validation(user, password):
 
 
 def user_registration(firstname, lastname, email, password, repeated_password, rol):
+    """
+    Checks if patient has already been included in DB. Else includes it.
+    :param firstname:
+    :param lastname:
+    :param email:
+    :param password:
+    :param repeated_password:
+    :param rol:
+    :return:
+    """
     if password == repeated_password:
         name = firstname + ' ' + lastname
         input_password = hashlib.sha256(password.encode("utf8"))

@@ -5,6 +5,13 @@ from mysql.connector import Error
 
 
 class Connection:
+    """
+    Creates a connection to the DB.
+    do_query function can be used to do select queries.
+    In order to do updates, drops or inserts, connection.commit() must
+    be called.
+    Connection params are to be obtained from json file.
+    """
 
     def __init__(self, json_path='database/mysql_connection_settings.json'):
         try:

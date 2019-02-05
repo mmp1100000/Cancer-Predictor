@@ -5,18 +5,33 @@ from database.mysql_connector import Connection
 
 
 def update_user_rol(uid, new_rol):
+    """
+    Updates rol in DB for given user.
+    :param uid:
+    :param new_rol:
+    """
     conn = Connection()
     conn.do_query('UPDATE user SET rol=\"' + new_rol + '\" WHERE id=' + uid + ';')
     conn.connection.commit()
 
 
 def get_user_rol(email):
+    """
+    Returns user rol from DB for given user
+    :param email:
+    :return: user rol (string)
+    """
     conn = Connection()
     rol = conn.do_query('SELECT rol FROM user WHERE email=\"' + email + '\";')
     return rol[0]
 
 
 def delete_by_id(table, uid):
+    """
+    Deletes user given its uid.
+    :param table:
+    :param uid:
+    """
     conn = Connection()
     if table == "user" and len(conn.do_query('SELECT id FROM user WHERE rol=\"Admin\";')) == 1:
         # Invalid to delete last admin
@@ -33,6 +48,13 @@ def delete_by_id(table, uid):
 
 
 def insert_new_user(username, email, password, rol):
+    """
+    Inserts new user into DB
+    :param username:
+    :param email:
+    :param password:
+    :param rol:
+    """
     input_password = hashlib.sha256(password.encode("utf8"))
     hex_dig = input_password.hexdigest()
     conn = Connection()
@@ -42,6 +64,14 @@ def insert_new_user(username, email, password, rol):
 
 
 def new_model(disease, model_type, dataset_description, model_path, test_data_path):
+    """
+    Adds new model to DB
+    :param disease:
+    :param model_type:
+    :param dataset_description:
+    :param model_path:
+    :param test_data_path:
+    """
     from predictor.train_workbench import process_dataset, save_model
     description = json.loads(dataset_description.read().decode('utf8').replace("'", '"'))
     test_data = process_dataset(test_data_path,
@@ -52,6 +82,10 @@ def new_model(disease, model_type, dataset_description, model_path, test_data_pa
 
 
 def get_cancers_models():
+    """
+    Returns disease and model type for each of the models in DB.
+    :return: disease,model_type (dict).
+    """
     conn = Connection()
     cancers_models = conn.do_query_mult_col('SELECT disease, model_type FROM model;')
     if cancers_models is None:
@@ -64,6 +98,10 @@ def get_cancers_models():
 
 
 def get_models_html_selector():
+    """
+    Returns html options for main page selector.
+    :return: html string
+    """
     models = get_cancers_models()
     disease_options = ""
     model_options = ""
@@ -78,6 +116,12 @@ def get_models_html_selector():
 
 
 def get_model_path(disease, model_type):
+    """
+    Returns first DB occurrence of model filepath given a disease and a model type.
+    :param disease:
+    :param model_type:
+    :return: model filepath (string)
+    """
     conn = Connection()
     cancers_models = conn.do_query_mult_col(
         'SELECT model_path FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')
@@ -99,6 +143,16 @@ def get_patient_from_db(id_patient):
 
 
 def insert_prediction(date, expression_file_path, result, disease_name, model_name, patient_id, user_email):
+    """
+    Inserts new prediction query into DB.
+    :param date:
+    :param expression_file_path:
+    :param result:
+    :param disease_name:
+    :param model_name:
+    :param patient_id:
+    :param user_email:
+    """
     conn = Connection()
     model_id = conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')[0]
     patient_id = get_patient_from_db(patient_id)
@@ -109,6 +163,12 @@ def insert_prediction(date, expression_file_path, result, disease_name, model_na
 
 
 def get_json_values(disease, model_type):
+    """
+    Returns json model data in html table format for given disease and model type.
+    :param disease:
+    :param model_type:
+    :return: html table (string)
+    """
     conn = Connection()
     json_file = conn.do_query_mult_col(
         'SELECT dataset_description FROM model WHERE disease="' + disease + '" AND model_type="' + model_type + '";')[0]
@@ -143,6 +203,12 @@ def get_json_values(disease, model_type):
 
 
 def get_model_acc(disease_name, model_name):
+    """
+    Returns model test ACC for given disease and model type.
+    :param disease_name:
+    :param model_name:
+    :return: test ACC (list of string)
+    """
     conn = Connection()
     model_id = \
     conn.do_query('SELECT id from model WHERE model_type="' + model_name + '" AND disease="' + disease_name + '";')[0]
